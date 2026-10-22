@@ -1,0 +1,971 @@
+/* =========================================================
+   Krásné náramky – redesign „teplý přírodní styl"
+   Načítá se z GitHub Pages, odkaz je v hlavicka.html
+   ========================================================= */
+
+/* ---------- Barvy a proměnné ---------- */
+:root {
+    --rd-bg: #FBF7F2;          /* krémové pozadí stránky */
+    --rd-surface: #FFFFFF;     /* karty, boxy */
+    --rd-sand: #F3EBE1;        /* pískové sekce */
+    --rd-border: #E7DCCF;      /* jemné linky */
+    --rd-text: #2F2621;        /* hlavní text (espresso) */
+    --rd-muted: #6E6057;       /* vedlejší text */
+    --rd-accent: #A65A38;      /* terakota – tlačítka, odkazy */
+    --rd-accent-hover: #8F4A2E;
+    --rd-accent-soft: #F4E4DA;
+    --rd-green: #4F6B3E;       /* skladem */
+    --rd-dark: #2B2420;        /* hlavička */
+    --rd-on-dark: #F6EFE6;
+    --rd-radius: 14px;
+    --rd-radius-sm: 10px;
+    --rd-shadow: 0 1px 2px rgba(47, 38, 33, .05), 0 4px 16px rgba(47, 38, 33, .05);
+    --rd-shadow-hover: 0 2px 4px rgba(47, 38, 33, .06), 0 14px 32px rgba(47, 38, 33, .10);
+    --rd-serif: "Noto Serif", Georgia, "Times New Roman", serif;
+
+    /* barvy šablony Shoptet */
+    --color-primary: #A65A38;
+    --color-primary-hover: #8F4A2E;
+    --color-secondary: #A65A38;
+    --color-secondary-hover: #8F4A2E;
+    --color-tertiary: #FFFFFF;
+    --color-tertiary-hover: #F3EBE1;
+    --color-header-background: #2B2420;
+    --colors-surface-primary: #FBF7F2;
+    --colors-surface-secondary: #F3EBE1;
+    --colors-surface-subtle: #EDE3D7;
+    --colors-foregrounds-headlines-primary: #2F2621;
+    --colors-foregrounds-content-primary: #2F2621;
+    --colors-foregrounds-content-primary-dark: #2F2621;
+    --colors-foregrounds-content-secondary: #4A3F38;
+    --colors-foregrounds-content-tertiary: #6E6057;
+    --colors-foregrounds-borders-primary: #CDBFB2;
+    --colors-foregrounds-borders-secondary: #E7DCCF;
+    --colors-forms-border: #CDBFB2;
+    --colors-forms-activated: #A65A38;
+    --colors-focus-primary: #A65A38;
+    --colors-state-success: #4F6B3E;
+    --colors-forms-positive: #4F6B3E;
+    --form-controls-border-radius: 10px;
+    --selects-bg-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='46' fill='none' viewBox='0 0 36 36'%3E%3Cpath fill='%232F2621' d='M18 21.8c-.21 0-.41-.08-.57-.23l-5-5a.803.803 0 0 1 0-1.13c.31-.31.82-.31 1.13 0L18 19.87l4.43-4.43c.31-.31.82-.31 1.13 0s.31.82 0 1.13l-5 5c-.15.15-.35.23-.56.23'/%3E%3C/svg%3E");
+}
+
+/* ---------- Základ ---------- */
+body,
+.overall-wrapper,
+.content-wrapper {
+    background-color: var(--rd-bg);
+    color: var(--rd-text);
+}
+
+h1, h2, h3, .h1, .h2, .h3,
+.category-title,
+.pageElement__heading,
+.p-detail-inner-header h1 {
+    font-family: var(--rd-serif);
+    font-weight: 500;
+    color: var(--rd-text);
+    letter-spacing: -.01em;
+}
+
+a {
+    color: var(--rd-accent);
+}
+
+a:hover {
+    color: var(--rd-accent-hover);
+}
+
+::selection {
+    background: var(--rd-accent-soft);
+}
+
+/* ---------- Tlačítka ---------- */
+.btn,
+a.btn {
+    border-radius: 999px;
+    text-transform: none;
+    font-weight: 600;
+    letter-spacing: .01em;
+    transition: background-color .2s, border-color .2s, color .2s, box-shadow .2s;
+}
+
+.btn.btn-conversion,
+a.btn.btn-conversion,
+.btn.btn-cart,
+a.btn.btn-cart {
+    box-shadow: 0 6px 16px rgba(166, 90, 56, .22);
+}
+
+.btn.btn-primary,
+a.btn.btn-primary,
+.btn.btn-secondary,
+a.btn.btn-secondary {
+    background-color: transparent;
+    border: 1.5px solid var(--rd-text);
+    color: var(--rd-text);
+    font-weight: 600;
+}
+
+.btn.btn-primary:hover,
+a.btn.btn-primary:hover,
+.btn.btn-secondary:hover,
+a.btn.btn-secondary:hover {
+    background-color: var(--rd-text);
+    border-color: var(--rd-text);
+    color: #fff;
+}
+
+.btn.btn-default,
+a.btn.btn-default {
+    background-color: var(--rd-surface);
+    border: 1.5px solid var(--rd-border);
+    color: var(--rd-text);
+}
+
+.btn.btn-default:hover,
+a.btn.btn-default:hover {
+    background-color: var(--rd-sand);
+    border-color: var(--rd-text);
+    color: var(--rd-text);
+}
+
+/* ---------- Formuláře ---------- */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+    border-radius: var(--rd-radius-sm);
+    border-color: var(--rd-border);
+    background-color: #fff;
+    color: var(--rd-text);
+}
+
+.form-control:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--rd-accent);
+    box-shadow: 0 0 0 3px var(--rd-accent-soft);
+    outline: none;
+}
+
+/* ---------- Hlavička ---------- */
+#header {
+    background-color: var(--rd-dark);
+    border: 0;
+}
+
+#navigation .menu-level-1 > li > a {
+    color: var(--rd-text);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+#navigation .menu-level-1 > li > a:hover {
+    color: var(--rd-accent);
+    text-decoration: none;
+}
+
+/* desktop: světlé písmo na tmavé hlavičce */
+@media (min-width: 992px) {
+    #navigation .menu-level-1 > li > a {
+        color: var(--rd-on-dark);
+        font-size: 15px;
+    }
+
+    #navigation .menu-level-1 > li > a:hover,
+    #navigation .menu-level-1 > li:hover > a {
+        color: #E8B08F;
+    }
+
+    .menu-helper > span {
+        color: var(--rd-on-dark);
+        font-weight: 500;
+        font-size: 15px;
+    }
+}
+
+.navigation-buttons a,
+.navigation-buttons .top-nav-button {
+    border: 0;
+    color: var(--rd-on-dark);
+}
+
+.navigation-buttons a:hover,
+.navigation-buttons .top-nav-button:hover {
+    color: #E8B08F;
+}
+
+.navigation-buttons a[data-target=cart] i {
+    background-color: var(--rd-accent);
+    color: #fff;
+}
+
+.navigation-buttons .dropdown > button {
+    border-color: rgba(246, 239, 230, .3);
+    border-radius: 999px;
+    color: var(--rd-on-dark);
+}
+
+/* podmenu je skryté (stejně jako dříve) */
+#navigation .submenu-arrow,
+#navigation .menu-level-2 {
+    display: none !important;
+}
+
+/* ---------- Drobečková navigace ---------- */
+.breadcrumbs {
+    font-size: 13px;
+    color: var(--rd-muted);
+}
+
+.breadcrumbs a {
+    color: var(--rd-muted);
+}
+
+/* ---------- Úvodní stránka (bloky vytváří JS v zápatí) ---------- */
+.rd-js .in-index .banners-row,
+.rd-js .in-index .welcome-wrapper .h1,
+.rd-js .in-index .welcome img[src*="Billboard"] {
+    display: none;
+}
+
+.rd-wrap {
+    max-width: 1418px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.rd-hero {
+    padding: 28px 0 8px;
+}
+
+.rd-hero__inner {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    align-items: stretch;
+    background: var(--rd-sand);
+    border-radius: 24px;
+    overflow: hidden;
+    min-height: 480px;
+}
+
+.rd-hero__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 56px 56px 56px 64px;
+}
+
+.rd-eyebrow {
+    margin: 0 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--rd-accent);
+}
+
+.rd-hero h1.rd-hero__title {
+    margin: 0 0 18px;
+    font-family: var(--rd-serif);
+    font-size: clamp(34px, 3.6vw, 54px);
+    line-height: 1.12;
+    font-weight: 500;
+    color: var(--rd-text);
+}
+
+.rd-hero__lead {
+    margin: 0 0 30px;
+    max-width: 30em;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--rd-muted);
+}
+
+.rd-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 26px;
+}
+
+.rd-hero__actions .btn {
+    padding: 14px 30px;
+    font-size: 16px;
+}
+
+.rd-hero__actions .btn:after {
+    display: none;
+}
+
+.rd-link {
+    font-weight: 600;
+    color: var(--rd-text);
+    text-decoration: underline;
+    text-decoration-color: var(--rd-accent);
+    text-underline-offset: 5px;
+}
+
+.rd-link:hover {
+    color: var(--rd-accent);
+}
+
+.rd-hero__media {
+    position: relative;
+    min-height: 320px;
+}
+
+.rd-hero__media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+}
+
+.rd-benefits {
+    padding: 22px 0;
+}
+
+.rd-benefits ul {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rd-benefits li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--rd-surface);
+    border: 1px solid var(--rd-border);
+    border-radius: var(--rd-radius);
+}
+
+.rd-benefits svg {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    color: var(--rd-accent);
+}
+
+.rd-benefits strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--rd-text);
+}
+
+.rd-benefits small {
+    display: block;
+    font-size: 13px;
+    line-height: 1.35;
+    color: var(--rd-muted);
+}
+
+.rd-section-head {
+    margin: 0 0 22px;
+    text-align: center;
+}
+
+.rd-section-head h2 {
+    margin: 0;
+    font-size: clamp(26px, 2.4vw, 34px);
+}
+
+.rd-cats {
+    padding: 40px 0 16px;
+}
+
+.rd-cats__grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 18px;
+}
+
+.rd-cat {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    color: var(--rd-text);
+}
+
+.rd-cat__img {
+    display: block;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--rd-sand);
+    box-shadow: var(--rd-shadow);
+}
+
+.rd-cat__img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .5s ease;
+}
+
+.rd-cat:hover .rd-cat__img img {
+    transform: scale(1.06);
+}
+
+.rd-cat__label {
+    display: block;
+    margin-top: 14px;
+    font-family: var(--rd-serif);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.rd-cat:hover .rd-cat__label {
+    color: var(--rd-accent);
+}
+
+/* záložka „Novinky" jako nadpis sekce */
+.homepage-tabs-wrapper {
+    margin-top: 32px;
+}
+
+.shp-tabs-row {
+    border: 0;
+}
+
+.shp-tabs-holder,
+.shp-tabs-wrapper .shp-tabs-row {
+    border-bottom: 0;
+}
+
+.homepage-tabs-wrapper .shp-tabs {
+    display: flex;
+    justify-content: center;
+    float: none;
+    border: 0;
+}
+
+.homepage-tabs .shp-tab:only-child > a,
+.homepage-tabs .shp-tab:only-child.active > a {
+    background: none;
+    border: 0 !important;
+    margin: 0;
+    padding: 0 0 8px;
+    font-family: var(--rd-serif);
+    font-size: clamp(26px, 2.4vw, 34px);
+    font-weight: 500;
+    color: var(--rd-text);
+}
+
+/* ---------- Záložky (detail produktu, více záložek) ---------- */
+.shp-tabs > li > a,
+.shp-tab-link {
+    border-radius: 999px;
+    border: 1px solid var(--rd-border) !important;
+    background: var(--rd-surface);
+    color: var(--rd-text);
+    margin-right: 8px;
+}
+
+.shp-tabs > li.active > a,
+.shp-tab.active .shp-tab-link {
+    background: var(--rd-text);
+    border-color: var(--rd-text) !important;
+    color: #fff;
+}
+
+/* ---------- Produktové karty ---------- */
+.products-block > div .p {
+    border: 0;
+    border-radius: var(--rd-radius);
+    background: var(--rd-surface);
+    box-shadow: var(--rd-shadow);
+    overflow: hidden;
+    transition: box-shadow .25s ease, transform .25s ease;
+}
+
+.products-block > div .p:hover {
+    box-shadow: var(--rd-shadow-hover);
+    transform: translateY(-2px);
+}
+
+.products-block > div .p > a.image {
+    overflow: hidden;
+    background: #fff;
+}
+
+.products-block > div .p > a.image img {
+    width: 100%;
+    height: auto;
+    transition: transform .5s ease;
+}
+
+.products-block > div .p:hover > a.image img {
+    transform: scale(1.04);
+}
+
+.products-block .p-code,
+.products-block > div .p .p-code,
+.products-block .p-bottom .p-desc,
+.products-block > div .p .p-bottom .p-desc {
+    display: none;
+}
+
+.products-block .p .name,
+.products-block > div .p .name {
+    height: auto;
+    min-height: 2.9em;
+    margin-top: 6px;
+    padding: 0 18px;
+    text-transform: none;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--rd-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.products-block .p .name:hover {
+    text-decoration: none;
+    color: var(--rd-accent);
+}
+
+.products-block > div .p .availability {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--rd-muted);
+}
+
+.products-block .p .prices .price-final strong,
+.products-block .p .price-final strong {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--rd-text);
+}
+
+.products-block .p .price-standard {
+    color: var(--rd-muted);
+}
+
+.products-block > div .p .p-bottom > div .p-tools {
+    padding: 14px 0 20px;
+}
+
+.products-block > div .p .p-bottom > div .p-tools .btn,
+.products-block > div .p .p-bottom > div .p-tools .btn.btn-primary {
+    width: auto;
+    min-width: 0;
+    padding: 6px 26px;
+    border: 1.5px solid var(--rd-text);
+    border-radius: 999px;
+    line-height: 26px;
+    font-size: 14px;
+}
+
+/* dostupnost „Skladem" – teplejší zelená */
+.availability [style*="#009901"],
+.availability-label[style*="#009901"],
+[style*="color:#009901"] {
+    color: var(--rd-green) !important;
+}
+
+/* štítky (Novinka, Tip, Sleva) */
+.flags-default .flag {
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+
+.flags-default .flag:before,
+.flags-default .flag:after {
+    display: none;
+}
+
+.flags-default .flag.flag-new {
+    background-color: var(--rd-green);
+}
+
+.flag-discount,
+.flags-extra .flag {
+    background-color: var(--rd-accent) !important;
+}
+
+/* ---------- Kategorie ---------- */
+.category-title {
+    font-size: clamp(32px, 3vw, 44px);
+    margin-bottom: 18px;
+}
+
+.category-perex,
+.category__secondDescription {
+    color: var(--rd-muted);
+}
+
+.subcategories.with-image {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin: 0 0 28px;
+    padding: 0;
+}
+
+.subcategories.with-image:before,
+.subcategories.with-image:after {
+    content: none;
+}
+
+.subcategories.with-image li {
+    width: auto;
+    float: none;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+}
+
+.subcategories.with-image li a:hover {
+    text-decoration: none;
+}
+
+.subcategories.with-image li a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%;
+    padding: 18px 12px 16px;
+    background: var(--rd-surface);
+    border: 1px solid var(--rd-border);
+    border-radius: var(--rd-radius);
+    text-decoration: none;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.subcategories.with-image li a:hover {
+    border-color: var(--rd-accent);
+    box-shadow: var(--rd-shadow-hover);
+}
+
+.subcategories li a .text {
+    color: var(--rd-text);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.listSorting__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.listSorting__control,
+.listSorting__controls .listSorting__control {
+    border-radius: 999px;
+    border: 1px solid var(--rd-border);
+    background: var(--rd-surface);
+    color: var(--rd-text);
+    margin: 0;
+}
+
+.listSorting__control--current,
+.listSorting__controls .listSorting__control--current {
+    background: var(--rd-text);
+    border-color: var(--rd-text);
+    color: #fff;
+}
+
+#category-header,
+.category-header {
+    border-bottom: 0;
+}
+
+.filters-unveil-button-wrapper .btn {
+    padding: 10px 26px;
+}
+
+.pagination__link,
+.pagination__list a,
+.pagination__list strong {
+    border-radius: 999px;
+}
+
+/* ---------- Detail produktu ---------- */
+.type-detail .sidebar-left {
+    display: none;
+}
+
+.type-detail .content-wrapper-in > .content {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 auto;
+}
+
+.p-detail-inner {
+    padding-top: 12px;
+}
+
+.p-image-wrapper .p-image,
+.p-image-wrapper .p-image img {
+    border-radius: var(--rd-radius);
+}
+
+.p-detail-inner-header h1 {
+    font-size: clamp(28px, 2.6vw, 40px);
+    line-height: 1.15;
+}
+
+.p-short-description {
+    color: var(--rd-muted);
+}
+
+.p-short-description strong {
+    color: var(--rd-text);
+}
+
+.p-variants-block .detail-parameters th,
+.detail-parameters th {
+    font-weight: 600;
+    text-transform: none;
+    color: var(--rd-text);
+}
+
+.p-to-cart-block {
+    background: var(--rd-surface);
+    border: 1px solid var(--rd-border);
+    border-radius: var(--rd-radius);
+    padding: 18px 20px;
+}
+
+.p-final-price-wrapper .price-final {
+    font-size: 30px;
+    color: var(--rd-text);
+}
+
+.p-to-cart-block .add-to-cart-button.btn-conversion {
+    padding: 14px 28px;
+    font-size: 16px;
+}
+
+.quantity {
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.p-detail-tabs-wrapper {
+    margin-top: 28px;
+}
+
+.description-inner {
+    max-width: 780px;
+    line-height: 1.7;
+}
+
+/* ---------- Košík a objednávka ---------- */
+.co-box,
+.order-summary.box {
+    background: var(--rd-surface);
+    border: 1px solid var(--rd-border);
+    border-radius: var(--rd-radius);
+}
+
+.radio-wrapper.active {
+    background-color: var(--rd-accent-soft);
+}
+
+.next-step .btn-conversion {
+    padding: 14px 32px;
+}
+
+.next-step .next-step-finish {
+    border-radius: 16px;
+}
+
+/* ---------- Instagram (doplněk dklab) ---------- */
+#dklab_instagram_widget {
+    margin-top: 48px;
+}
+
+#dklab_instagram_widget_heading {
+    font-family: var(--rd-serif);
+    font-weight: 500;
+}
+
+#dklab_instagram_widget_heading a.text {
+    font-family: var(--rd-serif);
+    font-weight: 500;
+    color: var(--rd-text);
+}
+
+/* ---------- Patička ---------- */
+#footer {
+    background: var(--rd-sand);
+    color: var(--rd-text);
+    border-top: 0;
+}
+
+#footer .pageElement__heading {
+    font-size: 20px;
+}
+
+#footer a {
+    color: var(--rd-text);
+}
+
+#footer a:hover {
+    color: var(--rd-accent);
+}
+
+@media (min-width: 992px) {
+    #footer .custom-footer {
+        display: flex;
+    }
+
+    #footer .custom-footer > div {
+        flex: 1 1 0;
+        width: auto;
+    }
+}
+
+#footer .footer-bottom {
+    border-top: 1px solid var(--rd-border);
+    color: var(--rd-muted);
+    font-size: 13px;
+}
+
+/* ---------- Cookie lišta ---------- */
+.siteCookies {
+    border-radius: var(--rd-radius) var(--rd-radius) 0 0;
+    background: var(--rd-surface);
+    box-shadow: 0 -8px 30px rgba(47, 38, 33, .12);
+}
+
+/* ---------- Skryté bloky (dřívější úpravy) ---------- */
+.benefitBanner,
+.top-products-wrapper,
+.products-top-wrapper,
+.custom-footer__login {
+    display: none !important;
+}
+
+.welcome-wrapper {
+    max-width: none !important;
+}
+
+#signature a {
+    display: none !important;
+}
+
+/* ---------- Mobil ---------- */
+@media (max-width: 991px) {
+    .rd-hero__inner {
+        grid-template-columns: 1fr;
+        min-height: 0;
+        border-radius: 18px;
+    }
+
+    .rd-hero__media {
+        order: -1;
+        min-height: 0;
+        aspect-ratio: 16 / 10;
+    }
+
+    .rd-hero__text {
+        padding: 28px 24px 32px;
+    }
+
+    .rd-benefits ul {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .rd-cats__grid {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 0 20px;
+        padding-bottom: 6px;
+        margin: 0 -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .rd-cat {
+        flex: 0 0 34%;
+        scroll-snap-align: start;
+    }
+}
+
+@media (max-width: 767px) {
+    .rd-wrap {
+        padding: 0;
+    }
+
+    /* produkty dva vedle sebe */
+    .products-block {
+        margin-left: -6px;
+        margin-right: -6px;
+    }
+
+    .products-block > div.product {
+        flex: 0 0 50%;
+        width: 50%;
+        max-width: 50%;
+        padding: 0 6px 12px;
+    }
+
+    .products-block > div .p .p-bottom > div .p-tools .btn,
+    .products-block > div .p .p-bottom > div .p-tools .btn.btn-primary {
+        padding: 4px 18px;
+        font-size: 13px;
+    }
+
+    .products-block .p .prices .price-final strong,
+    .products-block .p .price-final strong {
+        font-size: 16px;
+    }
+
+    .rd-hero {
+        padding-top: 14px;
+    }
+
+    .rd-hero__lead {
+        font-size: 16px;
+    }
+
+    .rd-benefits li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 14px;
+    }
+
+    .rd-cat {
+        flex-basis: 40%;
+    }
+
+    .rd-cat__label {
+        font-size: 15px;
+    }
+
+    .products-block .p .name,
+    .products-block > div .p .name {
+        padding: 0 10px;
+        font-size: 13px;
+    }
+}
