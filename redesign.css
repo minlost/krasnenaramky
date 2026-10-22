@@ -775,6 +775,467 @@ textarea:focus {
     line-height: 1.7;
 }
 
+/* ---------- Návrh náramku (stránku vytváří JS, oddíl 5) ---------- */
+/* původní detail produktu se schová; kategorie Navrhnout náramek přesměruje na produkt */
+.rd-js .type-detail.in-navrhnout-naramek .p-detail,
+.rd-js .type-category.in-navrhnout-naramek #content {
+    display: none;
+}
+
+.rd-konf {
+    padding: 8px 0 40px;
+}
+
+.rd-konf__head {
+    max-width: 720px;
+    margin: 0 0 28px;
+}
+
+.rd-konf__head h1 {
+    margin: 0 0 12px;
+    font-size: clamp(30px, 3vw, 44px);
+    line-height: 1.12;
+}
+
+.rd-konf__lead {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--rd-muted);
+}
+
+.rd-konf__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.rd-konf__side {
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.rd-konf__preview {
+    padding: 24px;
+    background: var(--rd-sand);
+    border-radius: 24px;
+}
+
+.rd-konf__ring {
+    position: relative;
+    max-width: 400px;
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+}
+
+/* gumička: průměr 76 % odpovídá RING = 0.38 v redesign.js */
+.rd-konf__ring::before {
+    content: "";
+    position: absolute;
+    inset: 12%;
+    border: 2px dashed var(--colors-foregrounds-borders-primary);
+    border-radius: 50%;
+}
+
+.rd-konf__center {
+    position: absolute;
+    inset: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    text-align: center;
+    pointer-events: none;
+}
+
+.rd-konf__filled {
+    font-family: var(--rd-serif);
+    font-size: clamp(24px, 2.4vw, 32px);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--rd-text);
+}
+
+.rd-konf__count {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--rd-muted);
+}
+
+.rd-konf__bead {
+    position: absolute;
+    z-index: 1;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    aspect-ratio: 1 / 1;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+}
+
+.rd-konf__bead img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity .2s;
+}
+
+.rd-konf__bead:hover img {
+    opacity: .5;
+}
+
+.rd-konf__bead:focus-visible {
+    outline: 2px solid var(--rd-accent);
+    outline-offset: 1px;
+}
+
+.rd-konf__bead--new {
+    animation: rd-konf-pop .3s ease-out;
+}
+
+@keyframes rd-konf-pop {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.4);
+    }
+}
+
+.rd-konf__tools {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    margin-top: 14px;
+}
+
+.rd-konf__tools button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--rd-text);
+    text-decoration: underline;
+    text-decoration-color: var(--rd-accent);
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+
+.rd-konf__tools button:disabled {
+    opacity: .4;
+    cursor: default;
+}
+
+.rd-konf__panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+}
+
+.rd-konf__wrist label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.rd-konf__wrist-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rd-konf__wrist-input input {
+    width: 96px;
+    font-size: 18px;
+    text-align: center;
+}
+
+.rd-konf__hint {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--rd-muted);
+}
+
+.rd-konf__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.rd-konf__tabs[hidden] {
+    display: none;
+}
+
+.rd-konf__tab {
+    padding: 8px 18px;
+    border: 1px solid var(--rd-border);
+    border-radius: 999px;
+    background: var(--rd-surface);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--rd-text);
+    cursor: pointer;
+}
+
+.rd-konf__tab[aria-pressed="true"] {
+    background: var(--rd-text);
+    border-color: var(--rd-text);
+    color: #fff;
+}
+
+.rd-konf__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rd-konf__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 14px 8px 12px;
+    background: var(--rd-surface);
+    border: 1px solid var(--rd-border);
+    border-radius: var(--rd-radius);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s, transform .1s;
+}
+
+.rd-konf__item:hover {
+    border-color: var(--rd-accent);
+    box-shadow: var(--rd-shadow-hover);
+}
+
+.rd-konf__item:active {
+    transform: scale(.97);
+}
+
+.rd-konf__item[aria-disabled="true"] {
+    opacity: .45;
+    border-color: var(--rd-border);
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+}
+
+.rd-konf__item-img {
+    display: block;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 10px;
+}
+
+.rd-konf__item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.rd-konf__item-name {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--rd-text);
+}
+
+.rd-konf__item-meta {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--rd-muted);
+}
+
+.rd-konf__loading {
+    margin: 0;
+    color: var(--rd-muted);
+}
+
+.rd-konf__summary {
+    padding: 20px 22px;
+    background: var(--rd-surface);
+    border: 1px solid var(--rd-border);
+    border-radius: var(--rd-radius);
+}
+
+.rd-konf__bar {
+    height: 6px;
+    overflow: hidden;
+    background: var(--rd-sand);
+    border-radius: 999px;
+}
+
+.rd-konf__bar span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--rd-accent);
+    transition: width .3s ease;
+}
+
+.rd-konf__bar--full span {
+    background: var(--rd-green);
+}
+
+.rd-konf__status {
+    margin: 10px 0 16px;
+    font-size: 14px;
+    color: var(--rd-muted);
+}
+
+.rd-konf__buy {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.rd-konf__price {
+    margin: 0;
+}
+
+.rd-konf__price strong {
+    display: block;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--rd-text);
+}
+
+.rd-konf__price small {
+    font-size: 13px;
+    color: var(--rd-muted);
+}
+
+.rd-konf__add {
+    padding: 14px 30px;
+    font-size: 16px;
+}
+
+.rd-konf__add:after {
+    display: none;
+}
+
+.rd-konf__add:disabled {
+    opacity: .45;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.rd-konf__msg {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--rd-accent-soft);
+    border-radius: var(--rd-radius-sm);
+    font-size: 14px;
+    color: var(--rd-text);
+}
+
+.rd-konf__msg:empty {
+    display: none;
+}
+
+.rd-konf__msg--ok {
+    background: #E6EDDD;
+}
+
+.rd-konf__msg a,
+.rd-konf__msg button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-weight: 600;
+    color: var(--rd-accent);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* pořadí na mobilu: zápěstí, náhled, korálky, cena */
+@media (max-width: 991px) {
+    .rd-konf__layout {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+
+    .rd-konf__side,
+    .rd-konf__panel {
+        display: contents;
+    }
+
+    .rd-konf__wrist {
+        order: 1;
+    }
+
+    .rd-konf__preview {
+        order: 2;
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .rd-konf__picker {
+        order: 3;
+    }
+
+    .rd-konf__summary {
+        order: 4;
+    }
+
+    .rd-konf__ring {
+        max-width: 340px;
+    }
+}
+
+@media (max-width: 767px) {
+    .rd-konf__head {
+        margin-bottom: 18px;
+    }
+
+    .rd-konf__lead {
+        font-size: 15px;
+    }
+
+    /* korálky se na mobilu posouvají vodorovně */
+    .rd-konf__tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    .rd-konf__tab {
+        flex: 0 0 auto;
+    }
+
+    .rd-konf__grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        padding-bottom: 6px;
+    }
+
+    .rd-konf__grid li {
+        flex: 0 0 112px;
+        scroll-snap-align: start;
+    }
+
+    .rd-konf__buy .rd-konf__add {
+        width: 100%;
+    }
+}
+
 /* ---------- Košík a objednávka ---------- */
 .co-box,
 .order-summary.box {

@@ -5,7 +5,7 @@ Vlastní vzhled pro [krasnenaramky.cz](https://www.krasnenaramky.cz/) (Shoptet, 
 | Soubor | Co dělá |
 | --- | --- |
 | `redesign.css` | Barvy, písma a vzhled celého webu |
-| `redesign.js` | Bloky úvodní stránky (texty a obrázky v `RD_CONFIG`), chat Smartsupp, náhled písma u gravírování a druhá fotka produktu po najetí myší |
+| `redesign.js` | Bloky úvodní stránky (texty a obrázky v `RD_CONFIG`), chat Smartsupp, náhled písma u gravírování, druhá fotka produktu po najetí myší a návrh náramku z korálků (nastavení v `KONF`) |
 | `hlavicka.html` | Kód do Shoptetu: Vzhled a obsah → Editor → HTML kód → **Hlavička** |
 | `zapati.html` | **Celý** obsah pole v Shoptetu: Vzhled a obsah → Editor → HTML kód → **Zápatí** (jen odkaz na `redesign.js`) |
 
@@ -21,3 +21,14 @@ Soubory běží přes GitHub Pages:
 3. GitHub Pages změnu zveřejní asi do minuty. Prohlížeče návštěvníků drží starou verzi nejvýš 10 minut.
 
 V administraci Shoptetu se při změně nic neupravuje.
+
+## Návrh náramku (`/navrh-naramku/`)
+
+- Stránka je produkt **Návrh náramku** v kategorii **Navrhnout náramek**. Jeho cena se připočte ke každému navrženému náramku. Kategorie Navrhnout náramek přesměruje rovnou na produkt.
+- Zatím se nabízejí jen korálky vypsané v `KONF.beads` (teď jen `/koralek-1/`).
+- Když se `KONF.beads` vyprázdní (`beads: []`), nabídnou se všechny korálky z kategorie **Korálky**. Její podkategorie (např. Kameny, Písmena) se v návrhu ukážou jako záložky. Korálek z kategorie se ukáže, jen když je ve výpisu (skladem nebo objednatelný).
+- Průměr korálku se píše do názvu, např. `Ametyst (8 mm)`. Když v názvu chybí, počítá se 8 mm.
+- Korálek nesmí mít varianty. Vyprodaný korálek nebo Návrh náramku košík odmítne.
+- Fotka korálku: čtvercové PNG s průhledným pozadím, stačí asi 300 × 300 px.
+- Do košíku jde Návrh náramku a korálky v potřebném počtu. Pořadí korálků a délka náramku se v objednávce vepíšou do poznámky pro prodejce.
+- Texty, rozsah zápěstí a o kolik je náramek delší než zápěstí se mění v `KONF` v oddílu 5 souboru `redesign.js`.
