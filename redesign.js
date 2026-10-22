@@ -314,6 +314,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return n + (n === 1 ? ' korálek' : n >= 2 && n <= 4 ? ' korálky' : ' korálků');
     }
 
+    // adresa produktu bez domény a lomítek, např. „koralek-02"
+    function slug(url) {
+        return url.split('/').filter(Boolean).pop();
+    }
+
     function loadDesigns() {
         try {
             return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -633,20 +638,69 @@ document.addEventListener("DOMContentLoaded", function () {
             renderState();
         }
 
-        // složení pro poznámku k objednávce: stejné korálky za sebou se sečtou
-        function describe() {
-            var runs = [];
+        // stejné korálky za sebou se sečtou
+        function runs() {
+            var list = [];
             state.chain.forEach(function (b) {
-                var last = runs[runs.length - 1];
+                var last = list[list.length - 1];
                 if (last && last.bead === b) {
                     last.n++;
                 } else {
-                    runs.push({ bead: b, n: 1 });
+                    list.push({ bead: b, n: 1 });
                 }
             });
-            return 'délka ' + cm(lengthMm()) + ', korálky za sebou: ' + runs.map(function (r) {
+            return list;
+        }
+
+        // odkaz, který náramek znovu poskládá v náhledu, např. …/navrh-naramku/#navrh=16/koralek-02*3/koralek-05
+        function shareUrl() {
+            return location.origin + KONF.page.url + '#navrh=' + state.wrist + '/' + runs().map(function (r) {
+                return slug(r.bead.url) + (r.n > 1 ? '*' + r.n : '');
+            }).join('/');
+        }
+
+        // složení pro poznámku k objednávce
+        function describe() {
+            return 'délka ' + cm(lengthMm()) + ', korálky za sebou: ' + runs().map(function (r) {
                 return r.n + '× ' + r.bead.name;
-            }).join(', ');
+            }).join(', ') + '\nNáhled: ' + shareUrl();
+        }
+
+        // náramek z odkazu v poznámce k objednávce; vyprodané korálky ve výpisu nejsou, načtou se z detailu
+        function loadShared() {
+            var m = location.hash.match(/^#navrh=([\d.]+)\/(.+)$/);
+            if (!m) {
+                return;
+            }
+            var found = {};
+            state.groups.forEach(function (g) {
+                g.beads.forEach(function (b) { found[slug(b.url)] = b; });
+            });
+            var missing = [];
+            var items = m[2].split('/').map(function (s) {
+                var p = s.split('*');
+                if (!found[p[0]] && missing.indexOf(p[0]) === -1) {
+                    missing.push(p[0]);
+                }
+                return { slug: p[0], n: +p[1] || 1 };
+            });
+            Promise.all(missing.map(function (s) {
+                return fetchDoc('/' + s + '/').then(function (doc) {
+                    found[s] = readBeadDetail(doc, '/' + s + '/');
+                });
+            })).then(function () {
+                state.wrist = parseFloat(m[1]);
+                wristInput.value = state.wrist;
+                state.chain = [];
+                items.forEach(function (it) {
+                    for (var i = 0; i < it.n; i++) {
+                        state.chain.push(found[it.slug]);
+                    }
+                });
+                change();
+            }).catch(function (err) {
+                setMsg('Náramek z odkazu se nepodařilo poskládat. ' + esc(err.message));
+            });
         }
 
         function addToCart() {
@@ -751,9 +805,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }));
             renderPicker();
             renderState();
+            loadShared();
         }).catch(function (err) {
             gridWrap.innerHTML = '<p class="rd-konf__loading">Korálky se nepodařilo načíst. ' + esc(err.message) + '</p>';
         });
+        window.addEventListener('hashchange', loadShared);
     }
 
     /* ---------- Poznámka k objednávce ---------- */
@@ -776,7 +832,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         var text = designs.map(function (d, i) {
             return 'Návrh náramku' + (designs.length > 1 ? ' ' + (i + 1) : '') + ': ' + d.text;
-        }).join('\n');
+        }).join('\n\n');
         if (remark.value.indexOf(text) !== -1) {
             return;
         }
