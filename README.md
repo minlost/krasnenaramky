@@ -7,7 +7,7 @@ Vlastní vzhled pro [krasnenaramky.cz](https://www.krasnenaramky.cz/) (Shoptet, 
 | `redesign.css` | Barvy, písma a vzhled celého webu |
 | `redesign.js` | Bloky úvodní stránky (úvodní blok, výhody, kategorie). Texty a obrázky se mění v `RD_CONFIG` na začátku souboru. |
 | `hlavicka.html` | Kód do Shoptetu: Vzhled a obsah → Editor → HTML kód → **Hlavička** |
-| `zapati.html` | Kód do Shoptetu: Vzhled a obsah → Editor → HTML kód → **Zápatí** |
+| `zapati.html` | **Celý** obsah pole v Shoptetu: Vzhled a obsah → Editor → HTML kód → **Zápatí** (chat Smartsupp, náhled písma u gravírování, druhá fotka po najetí myší a odkaz na `redesign.js`) |
 
 Soubory běží přes GitHub Pages:
 
