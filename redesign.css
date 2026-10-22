@@ -1219,16 +1219,38 @@ textarea:focus {
         flex: 0 0 auto;
     }
 
+    /* tři řady, aby se víc korálků vešlo na obrazovku a náhled zůstal nad nimi */
     .rd-konf__grid {
-        display: flex;
+        grid-auto-flow: column;
+        grid-template-rows: repeat(3, auto);
+        grid-template-columns: none;
+        grid-auto-columns: 96px;
+        gap: 8px;
         overflow-x: auto;
         scroll-snap-type: x proximity;
         padding-bottom: 6px;
     }
 
     .rd-konf__grid li {
-        flex: 0 0 112px;
         scroll-snap-align: start;
+    }
+
+    .rd-konf__item {
+        padding: 10px 6px 8px;
+    }
+
+    .rd-konf__item-img {
+        width: 44px;
+        height: 44px;
+        margin-bottom: 6px;
+    }
+
+    .rd-konf__item-name {
+        font-size: 13px;
+    }
+
+    .rd-konf__item-meta {
+        font-size: 12px;
     }
 
     .rd-konf__buy .rd-konf__add {

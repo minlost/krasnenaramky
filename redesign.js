@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function () {
 (function () {
     var KONF = {
         page: { bodyClass: 'in-navrhnout-naramek', url: '/navrh-naramku/' },
-        beads: ['/koralek-1/'], // vybrané korálky; když je seznam prázdný, berou se všechny z beadsCategory
+        beads: [], // vybrané korálky; když je seznam prázdný, berou se všechny z beadsCategory
         beadsCategory: '/koralky/',
         defaultBeadMm: 8,
         wrist: { min: 12, max: 24, step: 0.5, value: 16, extraCm: 2 },
