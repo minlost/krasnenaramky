@@ -1258,6 +1258,129 @@ textarea:focus {
     }
 }
 
+/* náramky v košíku, v okně košíku v hlavičce a v rekapitulaci objednávky */
+.rd-cart-navrhy {
+    margin-bottom: 24px;
+    padding: 18px 20px 16px;
+    background: var(--rd-sand);
+    border-radius: var(--rd-radius);
+}
+
+.rd-cart-navrhy--busy {
+    opacity: .6;
+    pointer-events: none;
+}
+
+.rd-cart-navrhy__title {
+    margin: 0 0 12px;
+    font-family: var(--rd-serif);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--rd-text);
+}
+
+.rd-cart-navrhy__note {
+    margin: 12px 0 0;
+    font-size: 13px;
+    color: var(--rd-muted);
+}
+
+.rd-navrhy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.order-summary .rd-navrhy {
+    padding: 4px 0 14px;
+}
+
+.rd-navrh {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 18px 8px 8px;
+    background: var(--rd-surface);
+    border: 1px solid var(--rd-border);
+    border-radius: var(--rd-radius);
+}
+
+.rd-navrh__ring {
+    position: relative;
+    flex: 0 0 auto;
+    width: 96px;
+    aspect-ratio: 1 / 1;
+}
+
+.rd-navrh__ring::before {
+    content: "";
+    position: absolute;
+    inset: 12%;
+    border: 1px dashed var(--colors-foregrounds-borders-primary);
+    border-radius: 50%;
+}
+
+.rd-navrh__ring img {
+    position: absolute;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    transform: translate(-50%, -50%);
+}
+
+.rd-navrh__info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    font-size: 13px;
+    color: var(--rd-muted);
+}
+
+.rd-navrh__info strong {
+    font-size: 15px;
+    color: var(--rd-text);
+}
+
+.rd-navrh__info a,
+.rd-navrh__remove {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--rd-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.rd-navrh__remove {
+    color: var(--rd-muted);
+}
+
+/* Návrh náramku a jeho korálky se v košíku nemění po kusech, jen celým náramkem */
+.rd-cart-locked .quantity,
+.rd-cart-locked .remove-item {
+    display: none;
+}
+
+.rd-cart-qty {
+    font-weight: 500;
+}
+
+@media (max-width: 767px) {
+    .rd-cart-navrhy {
+        padding: 16px 14px 14px;
+    }
+
+    .rd-navrh {
+        flex: 1 1 100%;
+    }
+}
+
 /* ---------- Košík a objednávka ---------- */
 .co-box,
 .order-summary.box {
