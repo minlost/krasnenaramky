@@ -27,7 +27,7 @@
         categories: [
             { title: 'Náramky', url: '/naramky/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3153-1_letni-laska-set.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Pro páry', url: '/naramky-pro-pary/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3068_naramky-pro-pary-inicialy-stribrne.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
-            { title: 'Se jménem', url: '/personalizovane-sperky/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/1938-1_naramek-obruc-s-vlastnim-textem-zlata-rosegold-stribrna-cerna.png?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
+            { title: 'Gravírování', url: '/personalizovane-sperky/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/1938-1_naramek-obruc-s-vlastnim-textem-zlata-rosegold-stribrna-cerna.png?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Náhrdelníky', url: '/nahrdelniky/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/2217_nahrdelnik-ametyst.png?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Na provázku', url: '/naramky-simple/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3046_naramky-pro-pary-simple-lava-a-howlit--3-mm-.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Zvěrokruh', url: '/magicky-zverokruh/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/255-2_naramek-se-znamenim-zverokruhu-cerny-premium--zlata-.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' }
@@ -283,10 +283,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var KONF = {
         page: { bodyClass: 'in-navrhnout-naramek', url: '/navrh-naramku/' },
         // záložky s korálky: každá je jeden produkt, korálky jsou jeho varianty; první záložka je vybraná
+        // mm je průměr korálků v záložce, průměr v názvu varianty („Ametyst (10 mm)") má přednost
         beadProducts: [
-            { name: 'Korálky', url: '/koralek/' },
-            { name: 'Bílá písmenka', url: '/pismenko-bile/' },
-            { name: 'Černá písmenka', url: '/pismenko-cerne/' }
+            { name: 'Korálky 8 mm', url: '/koralek/', mm: 8 },
+            { name: 'Korálky 6 mm', url: '/koralek-6mm/', mm: 6 },
+            { name: 'Bílá písmenka', url: '/pismenko-bile/', mm: 6 },
+            { name: 'Černá písmenka', url: '/pismenko-cerne/', mm: 6 }
         ],
         defaultBeadMm: 8,
         wrist: { min: 12, max: 24, step: 0.5, value: 16, extraCm: 2 },
@@ -415,12 +417,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function makeBead(name, priceText, priceId, image) {
+    function makeBead(name, priceText, priceId, image, defaultMm) {
         var mm = name.match(MM);
         return {
             name: name,
             label: mm ? name.replace(MM, ' ').replace(/\s+/g, ' ').trim() : name,
-            mm: mm ? parseFloat(mm[1].replace(',', '.')) : KONF.defaultBeadMm,
+            mm: mm ? parseFloat(mm[1].replace(',', '.')) : defaultMm || KONF.defaultBeadMm,
             price: parseFloat(priceText),
             priceId: priceId,
             image: image
@@ -438,13 +440,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // varianty na detailu produktu; název varianty je „Korálek: Ametyst (8 mm)", korálek se jmenuje „Ametyst (8 mm)"
-    function readVariants(doc) {
+    function readVariants(doc, mm) {
         return Array.prototype.map.call(doc.querySelectorAll('#simple-variants input[name="priceId"]:not(.variant-default)'), function (input) {
             return makeBead(
                 doc.getElementById(input.getAttribute('aria-labelledby')).textContent.replace(/^[^:]*:\s*/, '').trim(),
                 input.getAttribute('data-customerprice'),
                 input.value,
-                originalImage(input.getAttribute('data-big'))
+                originalImage(input.getAttribute('data-big')),
+                mm
             );
         }).filter(isValid);
     }
@@ -453,7 +456,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function loadGroups() {
         return Promise.all(KONF.beadProducts.map(function (p) {
             return fetchDoc(p.url).then(function (doc) {
-                return { name: p.name, beads: readVariants(doc) };
+                return { name: p.name, beads: readVariants(doc, p.mm) };
             });
         })).then(function (groups) {
             return groups.filter(function (g) {
