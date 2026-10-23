@@ -283,12 +283,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var KONF = {
         page: { bodyClass: 'in-navrhnout-naramek', url: '/navrh-naramku/' },
         // záložky s korálky: každá je jeden produkt, korálky jsou jeho varianty; první záložka je vybraná
-        // mm je průměr korálků v záložce, průměr v názvu varianty („Ametyst (10 mm)") má přednost
+        // mm je průměr korálků v záložce, průměr v názvu varianty („Ametyst (10 mm)") má přednost;
+        // korálek, který na náramku zabere méně, než je jeho průměr: „Zlatá koruna (10 mm, na náramku 8 mm)"
         beadProducts: [
             { name: 'Korálky 8 mm', url: '/koralek/', mm: 8 },
             { name: 'Korálky 6 mm', url: '/koralek-6mm/', mm: 6 },
-            { name: 'Bílá písmenka', url: '/pismenko-bile/', mm: 6 },
-            { name: 'Černá písmenka', url: '/pismenko-cerne/', mm: 6 },
+            { name: 'Bílá písmenka', url: '/pismenko-bile/', mm: 7 },
+            { name: 'Černá písmenka', url: '/pismenko-cerne/', mm: 7 },
             { name: 'Ozdoby', url: '/ozdroby/', mm: 8 }
         ],
         defaultBeadMm: 8,
@@ -300,6 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var STORAGE_KEY = 'rd:navrhy';
     var RING = 0.38; // poloměr kruhu jako podíl šířky náhledu, v CSS mu odpovídá inset: 12 %
     var MM = /\s*[(,–-]?\s*(\d+(?:[.,]\d+)?)\s*mm\s*\)?/i;
+    var ON_BRACELET = /\s*,?\s*na náramku\s*(\d+(?:[.,]\d+)?)\s*mm/i;
 
     var data = (window.dataLayer && window.dataLayer[0] && window.dataLayer[0].shoptet) || {};
 
@@ -353,12 +355,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // korálky rozmístěné po kruhu; length je délka náramku v mm, item(b, i, style) vrátí HTML jednoho korálku
+    // korálek se kreslí v plném průměru (mm), na kruhu ale zabere jen len (návrhy ze starší verze len nemají)
     function ringItems(chain, length, item) {
         var scale = 2 * Math.PI * RING / length * 100; // % šířky náhledu na 1 mm
         var pos = 0;
         return chain.map(function (b, i) {
-            var angle = (pos + b.mm / 2) / length * 2 * Math.PI - Math.PI / 2;
-            pos += b.mm;
+            var len = b.len || b.mm;
+            var angle = (pos + len / 2) / length * 2 * Math.PI - Math.PI / 2;
+            pos += len;
             return item(b, i, 'left:' + (50 + RING * 100 * Math.cos(angle)).toFixed(2) + '%;top:' + (50 + RING * 100 * Math.sin(angle)).toFixed(2) + '%;width:' + (b.mm * scale).toFixed(2) + '%');
         }).join('');
     }
@@ -419,11 +423,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function makeBead(name, priceText, priceId, image, defaultMm) {
-        var mm = name.match(MM);
+        var len = name.match(ON_BRACELET);
+        var rest = name.replace(ON_BRACELET, '');
+        var mm = rest.match(MM);
+        var size = mm ? parseFloat(mm[1].replace(',', '.')) : defaultMm || KONF.defaultBeadMm;
         return {
             name: name,
-            label: mm ? name.replace(MM, ' ').replace(/\s+/g, ' ').trim() : name,
-            mm: mm ? parseFloat(mm[1].replace(',', '.')) : defaultMm || KONF.defaultBeadMm,
+            label: mm ? rest.replace(MM, ' ').replace(/\s+/g, ' ').trim() : rest,
+            mm: size,
+            len: len ? parseFloat(len[1].replace(',', '.')) : size, // kolik korálek zabere na náramku
             price: parseFloat(priceText),
             priceId: priceId,
             image: image
@@ -431,7 +439,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function isValid(b) {
-        return isFinite(b.price) && b.mm > 0;
+        return isFinite(b.price) && b.mm > 0 && b.len > 0;
     }
 
     // původní fotka (zmenšené verze Shoptet doplní na 4 : 3, malý korálek by se v nich ztratil)
@@ -712,7 +720,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function usedMm() {
-            return state.chain.reduce(function (sum, b) { return sum + b.mm; }, 0);
+            return state.chain.reduce(function (sum, b) { return sum + b.len; }, 0);
         }
 
         function setMsg(html, ok) {
@@ -765,7 +773,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             Array.prototype.forEach.call(gridWrap.querySelectorAll('.rd-konf__item'), function (btn) {
                 var bead = state.groups[state.group].beads[btn.getAttribute('data-bead')];
-                btn.setAttribute('aria-disabled', bead.mm > free + 0.01 || state.busy ? 'true' : 'false');
+                btn.setAttribute('aria-disabled', bead.len > free + 0.01 || state.busy ? 'true' : 'false');
             });
         }
 
@@ -857,7 +865,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     url: shareUrl(),
                     length: lengthMm(),
                     beads: state.chain.map(function (b) {
-                        return { image: b.image, mm: b.mm };
+                        return { image: b.image, mm: b.mm, len: b.len };
                     }),
                     items: items
                 });
@@ -882,7 +890,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (t.classList.contains('rd-konf__item')) {
                 var bead = state.groups[state.group].beads[t.getAttribute('data-bead')];
-                if (bead.mm > lengthMm() - usedMm() + 0.01) {
+                if (bead.len > lengthMm() - usedMm() + 0.01) {
                     setMsg('Korálek „' + esc(bead.name) + '“ se už nevejde. Zbývá ' + cm(lengthMm() - usedMm()) + '.');
                     return;
                 }
@@ -927,7 +935,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             state.groups = groups;
             state.minMm = Math.min.apply(null, groups.map(function (g) {
-                return Math.min.apply(null, g.beads.map(function (b) { return b.mm; }));
+                return Math.min.apply(null, g.beads.map(function (b) { return b.len; }));
             }));
             renderPicker();
             renderState();
