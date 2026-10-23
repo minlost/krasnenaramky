@@ -277,13 +277,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* ---------- 5. Návrh náramku z korálků ---------- */
 // Stránka je produkt „Návrh náramku" v kategorii Navrhnout náramek, korálky jsou
-// produkty v kategorii Korálky. Průměr korálku se čte z názvu, např. „Ametyst (8 mm)".
+// varianty produktů v KONF.beadProducts. Průměr korálku se čte z názvu varianty, např. „Ametyst (8 mm)".
 // Složení náramku se uloží do prohlížeče a v objednávce se vepíše do poznámky pro prodejce.
 (function () {
     var KONF = {
         page: { bodyClass: 'in-navrhnout-naramek', url: '/navrh-naramku/' },
-        beads: [], // vybrané korálky; když je seznam prázdný, berou se všechny z beadsCategory
-        beadsCategory: '/koralky/',
+        beadProducts: ['/koralek/'], // produkty s korálky ve variantách; každý produkt je jedna záložka (Kameny, Písmena…)
         defaultBeadMm: 8,
         wrist: { min: 12, max: 24, step: 0.5, value: 16, extraCm: 2 },
         toleranceCm: 0.5, // o kolik může být hotový náramek kratší, než vychází ze zápěstí
@@ -312,11 +311,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function beadCount(n) {
         return n + (n === 1 ? ' korálek' : n >= 2 && n <= 4 ? ' korálky' : ' korálků');
-    }
-
-    // adresa produktu bez domény a lomítek, např. „koralek-02"
-    function slug(url) {
-        return url.split('/').filter(Boolean).pop();
     }
 
     // návrhy ze starší verze nemají položky košíku ani korálky pro náhled, proto se zahodí
@@ -361,22 +355,47 @@ document.addEventListener("DOMContentLoaded", function () {
         }).join('');
     }
 
-    // náramky v košíku a v rekapitulaci objednávky, s odkazem na náhled
-    function designList(designs, removable) {
-        return '<ul class="rd-navrhy">' + designs.map(function (d, i) {
-            var link = ' href="' + esc(d.url) + '" target="_blank" rel="noopener"';
-            return '<li class="rd-navrh">' +
-                '<a class="rd-navrh__ring"' + link + ' tabindex="-1" aria-hidden="true">' + ringItems(d.beads, d.length, function (b, j, style) {
-                    return '<img src="' + esc(b.image) + '" alt="" style="' + style + '">';
-                }) + '</a>' +
-                '<span class="rd-navrh__info">' +
-                    '<strong>Náramek' + (designs.length > 1 ? ' ' + (i + 1) : '') + '</strong>' +
-                    '<span>' + cm(d.length) + ' · ' + beadCount(d.beads.length) + '</span>' +
-                    '<a' + link + '>Zobrazit náramek</a>' +
-                    (removable ? '<button type="button" class="rd-navrh__remove" data-navrh="' + i + '">Odebrat náramek</button>' : '') +
-                '</span>' +
-            '</li>';
-        }).join('') + '</ul>';
+    // malý kruh korálků s odkazem na náhled náramku
+    function ringLink(d) {
+        return '<a class="rd-navrh__ring" href="' + esc(d.url) + '" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">' + ringItems(d.beads, d.length, function (b, j, style) {
+            return '<img src="' + esc(b.image) + '" alt="" style="' + style + '">';
+        }) + '</a>';
+    }
+
+    // délka, počet korálků a odkazy pod názvem náramku v košíku a v rekapitulaci objednávky
+    function designInfo(d, i, removable) {
+        return '<span class="rd-navrh__info">' +
+            '<span>' + cm(d.length) + ' · ' + beadCount(d.beads.length) + '</span>' +
+            '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">Zobrazit náramek</a>' +
+            (removable ? '<button type="button" class="rd-navrh__remove" data-navrh="' + i + '">Odebrat náramek</button>' : '') +
+        '</span>';
+    }
+
+    function designName(designs, i) {
+        return 'Návrh náramku' + (designs.length > 1 ? ' ' + (i + 1) : '');
+    }
+
+    // kolik kusů které položky košíku patří náramkům
+    function usedByDesigns(designs) {
+        var used = {};
+        designs.forEach(function (d) {
+            d.items.forEach(function (item) {
+                used[item.priceId] = (used[item.priceId] || 0) + item.amount;
+            });
+        });
+        return used;
+    }
+
+    // cena náramku: Návrh a jeho korálky; unit je cena za kus podle priceId
+    function designPrice(d, unit) {
+        return d.items.reduce(function (s, item) {
+            return s + (unit[item.priceId] || 0) * item.amount;
+        }, 0);
+    }
+
+    // „1 234,50 Kč" → 1234.5
+    function parsePrice(text) {
+        return parseFloat(text.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
     }
 
     /* ---------- Data ze Shoptetu ---------- */
@@ -391,14 +410,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function makeBead(name, priceText, url, image) {
+    function makeBead(name, priceText, priceId, image) {
         var mm = name.match(MM);
         return {
             name: name,
             label: mm ? name.replace(MM, ' ').replace(/\s+/g, ' ').trim() : name,
             mm: mm ? parseFloat(mm[1].replace(',', '.')) : KONF.defaultBeadMm,
             price: parseFloat(priceText),
-            url: url,
+            priceId: priceId,
             image: image
         };
     }
@@ -413,66 +432,25 @@ document.addEventListener("DOMContentLoaded", function () {
         return url.replace('/shop/big/', '/shop/orig/').replace(/\?.*$/, ts ? '?' + ts : '');
     }
 
-    // karty produktů ve výpisu kategorie
-    function readBeads(doc) {
-        return Array.prototype.map.call(doc.querySelectorAll('#products .p[data-micro="product"]'), function (p) {
-            var offer = p.querySelector('[data-micro-price]');
+    // varianty na detailu produktu; název varianty je „Korálek: Ametyst (8 mm)", korálek se jmenuje „Ametyst (8 mm)"
+    function readVariants(doc) {
+        return Array.prototype.map.call(doc.querySelectorAll('#simple-variants input[name="priceId"]:not(.variant-default)'), function (input) {
             return makeBead(
-                p.querySelector('[data-micro="name"]').textContent.trim(),
-                offer && offer.getAttribute('data-micro-price'),
-                p.querySelector('a[data-micro="url"]').getAttribute('href'),
-                originalImage(p.querySelector('img').getAttribute('data-micro-image'))
+                doc.getElementById(input.getAttribute('aria-labelledby')).textContent.replace(/^[^:]*:\s*/, '').trim(),
+                input.getAttribute('data-customerprice'),
+                input.value,
+                originalImage(input.getAttribute('data-big'))
             );
         }).filter(isValid);
     }
 
-    // detail produktu (pro korálky vybrané v KONF.beads)
-    function readBeadDetail(doc, url) {
-        var priceMeta = doc.querySelector('#product-detail-form meta[itemprop="price"]');
-        var image = doc.querySelector('.p-image .p-main-image');
-        return makeBead(
-            doc.querySelector('.p-detail-inner-header h1').textContent.trim(),
-            priceMeta && priceMeta.getAttribute('content'),
-            url,
-            image && image.getAttribute('data-href')
-        );
-    }
-
-    // všechny stránky výpisu kategorie
-    function loadCategory(url, doc) {
-        return (doc ? Promise.resolve(doc) : fetchDoc(url)).then(function (d) {
-            var beads = readBeads(d);
-            var next = d.querySelector('link[rel="next"]');
-            return next ? loadCategory(next.getAttribute('href')).then(function (more) {
-                return beads.concat(more);
-            }) : beads;
-        });
-    }
-
-    // podkategorie Korálků jsou skupiny (Kameny, Písmena…); bez podkategorií je jedna skupina
+    // každý produkt z KONF.beadProducts je jedna skupina, jeho varianty jsou korálky
     function loadGroups() {
-        if (KONF.beads.length) {
-            return Promise.all(KONF.beads.map(function (url) {
-                return fetchDoc(url).then(function (doc) {
-                    return readBeadDetail(doc, url);
-                });
-            })).then(function (beads) {
-                return [{ name: '', beads: beads.filter(isValid) }];
+        return Promise.all(KONF.beadProducts.map(function (url) {
+            return fetchDoc(url).then(function (doc) {
+                return { name: doc.querySelector('.p-detail-inner-header h1').textContent.trim(), beads: readVariants(doc) };
             });
-        }
-        return fetchDoc(KONF.beadsCategory).then(function (doc) {
-            var subs = Array.prototype.map.call(doc.querySelectorAll('.subcategories li a'), function (a) {
-                return { name: a.textContent.trim(), url: a.getAttribute('href') };
-            });
-            if (!subs.length) {
-                subs = [{ name: '', url: KONF.beadsCategory, doc: doc }];
-            }
-            return Promise.all(subs.map(function (s) {
-                return loadCategory(s.url, s.doc).then(function (beads) {
-                    return { name: s.name, beads: beads };
-                });
-            }));
-        }).then(function (groups) {
+        })).then(function (groups) {
             return groups.filter(function (g) {
                 return g.beads.length;
             });
@@ -554,7 +532,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // nad tabulkou se ukážou náramky; Návrh náramku a jeho korálky jdou odebrat jen celé, jako náramek
+    // řádek košíku: počet kusů místo +/− a cena; řádek bez +/− a křížku jde odebrat jen celým náramkem
+    function lockRow(row, quantity, total, unit) {
+        var qty = row.querySelector('.quantity');
+        var unitPrice = row.querySelector('.p-price .price-final');
+        var totalPrice = row.querySelector('.p-total .price-final');
+        row.classList.add('rd-cart-locked');
+        if (qty) {
+            qty.insertAdjacentHTML('afterend', '<span class="rd-cart-qty">' + quantity + ' ks</span>');
+        }
+        if (unitPrice && unit !== undefined) {
+            unitPrice.textContent = price(unit);
+        }
+        if (totalPrice) {
+            totalPrice.textContent = price(total);
+        }
+    }
+
+    // Návrh náramku se ukáže jako náramky (řádek za každý návrh) a korálky z návrhů se skryjí
     function enhanceCart(table) {
         if (table.hasAttribute('data-rd-navrhy')) {
             return;
@@ -570,38 +565,49 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        var locked = {};
-        designs.forEach(function (d) {
-            d.items.forEach(function (item) {
-                locked[item.priceId] = true;
-            });
-        });
+        // cena za kus je Součet řádku / počet
+        var used = usedByDesigns(designs);
+        var unit = {};
+        var base;
         cart.forEach(function (c) {
-            var quantity = c.row.querySelector('.quantity');
-            if (locked[c.priceId] && quantity) {
-                c.row.classList.add('rd-cart-locked');
-                quantity.insertAdjacentHTML('afterend', '<span class="rd-cart-qty">' + c.quantity + ' ks</span>');
+            var total = c.row.querySelector('.p-total .price-final');
+            unit[c.priceId] = total ? parsePrice(total.textContent) / c.quantity : 0;
+            if (c.priceId === String(designs[0].priceId)) {
+                base = c;
+            } else if (used[c.priceId] >= c.quantity) {
+                c.row.classList.add('rd-cart-hidden');
+            } else if (used[c.priceId]) {
+                // zákazník má korálky i mimo náramek, v řádku zůstanou jen ty
+                lockRow(c.row, c.quantity - used[c.priceId], (c.quantity - used[c.priceId]) * unit[c.priceId]);
             }
         });
 
-        var old = table.parentNode.querySelector('.rd-cart-navrhy');
-        if (old) {
-            old.remove();
-        }
-        var box = document.createElement('div');
-        box.className = 'rd-cart-navrhy';
-        box.innerHTML = '<p class="rd-cart-navrhy__title">Vaše náramky</p>' + designList(designs, true) +
-            '<p class="rd-cart-navrhy__note">Korálky náramků jsou v košíku po jednom. Měnit je jde jen celým náramkem.</p>';
-        table.parentNode.insertBefore(box, table);
+        var template = base.row.cloneNode(true);
+        var last = base.row;
+        designs.forEach(function (d, i) {
+            var row = i ? template.cloneNode(true) : base.row;
+            var link = row.querySelector('.p-name .main-link');
+            var sum = designPrice(d, unit);
+            if (i) {
+                last.parentNode.insertBefore(row, last.nextSibling);
+                last = row;
+            }
+            row.querySelector('.cart-p-image').innerHTML = ringLink(d);
+            link.href = d.url;
+            link.target = '_blank';
+            link.textContent = designName(designs, i);
+            link.insertAdjacentHTML('afterend', designInfo(d, i, true));
+            lockRow(row, 1, sum, sum);
+        });
 
-        box.addEventListener('click', function (e) {
+        table.addEventListener('click', function (e) {
             var btn = e.target.closest('.rd-navrh__remove');
-            if (!btn || box.classList.contains('rd-cart-navrhy--busy')) {
+            if (!btn || table.classList.contains('rd-cart-busy')) {
                 return;
             }
             var i = +btn.getAttribute('data-navrh');
             var items = designs[i].items;
-            box.classList.add('rd-cart-navrhy--busy');
+            table.classList.add('rd-cart-busy');
             btn.textContent = 'Odebírám…';
             // Návrh až nakonec, aby v košíku nezůstal Návrh bez korálků
             removeItems(items.slice(1).concat(items[0]), cart).then(function () {
@@ -774,11 +780,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return list;
         }
 
-        // odkaz, který náramek znovu poskládá v náhledu, např. …/navrh-naramku/#navrh=16/koralek-02*3/koralek-05
-        // adresy korálků jsou zakódované, takže jim neuškodí znaky jako @ . # / v názvu nebo adrese
+        // odkaz, který náramek znovu poskládá v náhledu, např. …/navrh-naramku/#navrh=16/5512*3/5515 (priceId korálků)
         function shareUrl() {
             return location.origin + KONF.page.url + '#navrh=' + state.wrist + '/' + runs().map(function (r) {
-                return encodeURIComponent(slug(r.bead.url)) + (r.n > 1 ? '*' + r.n : '');
+                return r.bead.priceId + (r.n > 1 ? '*' + r.n : '');
             }).join('/');
         }
 
@@ -789,7 +794,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }).join(', ') + '\nNáhled: ' + shareUrl();
         }
 
-        // náramek z odkazu v poznámce k objednávce; vyprodané korálky ve výpisu nejsou, načtou se z detailu
+        // náramek z odkazu v poznámce k objednávce
         function loadShared() {
             var m = location.hash.match(/^#navrh=([\d.]+)\/(.+)$/);
             if (!m) {
@@ -797,44 +802,36 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             var found = {};
             state.groups.forEach(function (g) {
-                g.beads.forEach(function (b) { found[slug(b.url)] = b; });
+                g.beads.forEach(function (b) { found[b.priceId] = b; });
             });
-            var missing = [];
-            var items = m[2].split('/').map(function (s) {
-                var p = s.match(/^(.*?)(?:\*(\d+))?$/); // encodeURIComponent nekóduje *, počet je proto až za posledním
-                var key = decodeURIComponent(p[1]);
-                if (!found[key] && missing.indexOf(key) === -1) {
-                    missing.push(key);
+            var chain = [];
+            var complete = m[2].split('/').every(function (s) {
+                var p = s.match(/^(\d+)(?:\*(\d+))?$/);
+                var bead = p && found[p[1]];
+                for (var i = 0; bead && i < (+p[2] || 1); i++) {
+                    chain.push(bead);
                 }
-                return { slug: key, n: +p[2] || 1 };
+                return !!bead;
             });
-            Promise.all(missing.map(function (s) {
-                return fetchDoc('/' + s + '/').then(function (doc) {
-                    found[s] = readBeadDetail(doc, '/' + s + '/');
-                });
-            })).then(function () {
-                state.wrist = parseFloat(m[1]);
-                wristInput.value = state.wrist;
-                state.chain = [];
-                items.forEach(function (it) {
-                    for (var i = 0; i < it.n; i++) {
-                        state.chain.push(found[it.slug]);
-                    }
-                });
-                change();
-            }).catch(function (err) {
-                setMsg('Náramek z odkazu se nepodařilo poskládat. ' + esc(err.message));
-            });
+            if (!complete) {
+                setMsg('Náramek z odkazu se nepodařilo poskládat, některé korálky už v nabídce nejsou.');
+                return;
+            }
+            state.wrist = parseFloat(m[1]);
+            wristInput.value = state.wrist;
+            state.chain = chain;
+            change();
         }
 
         function addToCart() {
-            var counts = [];
+            // Návrh náramku musí být první, při odebírání z košíku se bere jako poslední
+            var items = [{ priceId: base.priceId, amount: 1 }];
             state.chain.forEach(function (b) {
-                var c = counts.filter(function (x) { return x.bead === b; })[0];
-                if (c) {
-                    c.amount++;
+                var item = items.filter(function (x) { return x.priceId === b.priceId; })[0];
+                if (item) {
+                    item.amount++;
                 } else {
-                    counts.push({ bead: b, amount: 1 });
+                    items.push({ priceId: b.priceId, amount: 1 });
                 }
             });
 
@@ -843,23 +840,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setMsg('');
             renderState();
 
-            // priceId korálku je jen na jeho detailu, výpis kategorie ho neobsahuje
-            var items;
-            Promise.all(counts.map(function (c) {
-                return fetchDoc(c.bead.url).then(function (doc) {
-                    var input = doc.querySelector('#product-detail-form input[name="priceId"]');
-                    if (!input || !doc.querySelector('#product-detail-form .add-to-cart-button')) {
-                        throw new Error('Korálek „' + c.bead.name + '“ teď nejde objednat. Vyměňte ho prosím za jiný.');
-                    }
-                    c.priceId = input.value;
-                });
-            })).then(function () {
-                // Návrh náramku musí být první, při odebírání z košíku se bere jako poslední
-                items = [{ priceId: base.priceId, amount: 1 }].concat(counts.map(function (c) {
-                    return { priceId: c.priceId, amount: c.amount };
-                }));
-                return addItems(items);
-            }).then(function (payload) {
+            addItems(items).then(function (payload) {
                 var designs = loadDesigns();
                 designs.push({
                     priceId: base.priceId,
@@ -933,7 +914,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         loadGroups().then(function (groups) {
             if (!groups.length) {
-                throw new Error('V kategorii ' + KONF.beadsCategory + ' zatím nejsou žádné korálky.');
+                throw new Error('Zatím tu nejsou žádné korálky.');
             }
             state.groups = groups;
             state.minMm = Math.min.apply(null, groups.map(function (g) {
@@ -948,26 +929,68 @@ document.addEventListener("DOMContentLoaded", function () {
         window.addEventListener('hashchange', loadShared);
     }
 
-    /* ---------- Poznámka k objednávce ---------- */
-    // složení jde prodejci v poznámce, zákazník místo něj vidí náramky v rekapitulaci
-    function fillOrderNote() {
-        var designs = keepDesigns(function (priceId) {
+    /* ---------- Objednávka ---------- */
+    // náramky podle košíku, se kterým se stránka objednávky načetla
+    function orderDesigns() {
+        return keepDesigns(function (priceId) {
             return (data.cart || []).reduce(function (n, item) {
                 return String(item.priceId) === priceId ? n + item.quantity : n;
             }, 0);
         });
+    }
+
+    // rekapitulace (krok 1 a 2): místo Návrhu náramku a jeho korálků řádek za každý náramek
+    function enhanceRecap() {
+        var designs = orderDesigns();
+        var used = usedByDesigns(designs);
+        var unit = {};
+        var base;
+        (designs.length ? data.cart : []).forEach(function (item) {
+            var priceId = String(item.priceId);
+            var row = document.querySelector('.order-summary-item[data-micro-sku="' + item.code + '"]');
+            var total = row && row.querySelector('[data-testid="recapItemPrice"]');
+            if (!total) {
+                return;
+            }
+            unit[priceId] = parsePrice(total.textContent) / item.quantity;
+            if (priceId === String(designs[0].priceId)) {
+                base = row;
+            } else if (used[priceId] >= item.quantity) {
+                row.classList.add('rd-cart-hidden');
+            } else if (used[priceId]) {
+                // zákazník má korálky i mimo náramek, v řádku zůstanou jen ty
+                row.querySelector('[data-testid="recapItemAmount"]').textContent = (item.quantity - used[priceId]) + 'x';
+                total.textContent = price((item.quantity - used[priceId]) * unit[priceId]);
+            }
+        });
+        if (!base) {
+            return;
+        }
+
+        var template = base.cloneNode(true);
+        var last = base;
+        designs.forEach(function (d, i) {
+            var row = i ? template.cloneNode(true) : base;
+            if (i) {
+                last.parentNode.insertBefore(row, last.nextSibling);
+                last = row;
+            }
+            row.classList.add('rd-recap-navrh');
+            row.firstElementChild.innerHTML = ringLink(d) + '<span>' +
+                '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">' + designName(designs, i) + '</a>' +
+                designInfo(d, i, false) +
+            '</span>';
+            row.querySelector('[data-testid="recapItemPrice"]').textContent = price(designPrice(d, unit));
+        });
+    }
+
+    // složení jde prodejci v poznámce, zákazník místo něj vidí náramky v rekapitulaci
+    function fillOrderNote() {
+        var designs = orderDesigns();
         var remark = document.getElementById('remark');
         var note = document.getElementById('note');
         if (!designs.length || !remark || !note) {
             return;
-        }
-
-        var base = data.cart.filter(function (item) {
-            return String(item.priceId) === String(designs[0].priceId);
-        })[0];
-        var recap = document.querySelector('.order-summary-item[data-micro-sku="' + base.code + '"]');
-        if (recap) {
-            recap.insertAdjacentHTML('afterend', designList(designs, false));
         }
 
         // Shoptet při odeslání vymaže pole v #note, když poznámka není zaškrtnutá. Skutečné pole
@@ -1007,8 +1030,15 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             // okno košíku v hlavičce se načítá dodatečně, stránka košíku se po změně načte znovu
             document.addEventListener('ShoptetDOMCartContentLoaded', enhanceCarts);
-            if (data.pageType === 'cart' || data.pageType === 'customerDetails') {
-                var init = data.pageType === 'cart' ? enhanceCarts : fillOrderNote;
+            var init = {
+                cart: enhanceCarts,
+                billingAndShipping: enhanceRecap,
+                customerDetails: function () {
+                    enhanceRecap();
+                    fillOrderNote();
+                }
+            }[data.pageType];
+            if (init) {
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', init);
                 } else {

@@ -25,10 +25,9 @@ V administraci Shoptetu se při změně nic neupravuje.
 ## Návrh náramku (`/navrh-naramku/`)
 
 - Stránka je produkt **Návrh náramku** v kategorii **Navrhnout náramek**. Jeho cena se připočte ke každému navrženému náramku. Kategorie Navrhnout náramek přesměruje rovnou na produkt.
-- Nabízejí se všechny korálky z kategorie **Korálky** (`KONF.beads` je prázdné). Její podkategorie (např. Kameny, Písmena) se v návrhu ukážou jako záložky. Korálek z kategorie se ukáže, jen když je ve výpisu (skladem nebo objednatelný), vyprodaný se v návrhu neukáže.
-- Když se do `KONF.beads` vypíšou adresy korálků (např. `['/koralek-01/']`), nabídnou se jen tyto.
-- Průměr korálku se píše do názvu, např. `Ametyst (8 mm)`. Když v názvu chybí, počítá se 8 mm.
-- Korálek nesmí mít varianty. Vyprodaný korálek nebo Návrh náramku košík odmítne.
-- Fotka korálku: čtvercové PNG s průhledným pozadím, stačí asi 300 × 300 px.
+- Korálky jsou varianty produktu, jehož adresa je v `KONF.beadProducts` (např. `['/koralky-2/']`). Produkt má jeden parametr variant (např. **Korálek**) a každá jeho hodnota je jeden korálek. Když je v `KONF.beadProducts` víc produktů (např. Kameny, Písmena), ukážou se v návrhu jako záložky s názvem produktu.
+- Průměr korálku se píše do názvu varianty, např. `Ametyst (8 mm)`. Když v názvu chybí, počítá se 8 mm.
+- Fotka korálku je obrázek přiřazený variantě. Čtvercové PNG s průhledným pozadím, stačí asi 300 × 300 px.
+- Vyprodaný korálek nebo Návrh náramku košík odmítne.
 - Do košíku jde Návrh náramku a korálky v potřebném počtu. Pořadí korálků a délka náramku se v objednávce vepíšou do poznámky pro prodejce.
 - Texty, rozsah zápěstí a o kolik je náramek delší než zápěstí se mění v `KONF` v oddílu 5 souboru `redesign.js`.
