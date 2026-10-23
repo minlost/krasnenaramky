@@ -25,9 +25,9 @@ V administraci Shoptetu se při změně nic neupravuje.
 ## Návrh náramku (`/navrh-naramku/`)
 
 - Stránka je produkt **Návrh náramku** v kategorii **Navrhnout náramek**. Jeho cena se připočte ke každému navrženému náramku. Kategorie Navrhnout náramek přesměruje rovnou na produkt.
-- Korálky jsou varianty produktů v `KONF.beadProducts`. Každý produkt je jedna záložka v návrhu (`{ name: 'Korálky', url: '/koralek/' }`), první je vybraná. Produkt má jeden parametr variant (např. **Koralek**, **Písmenko**) a každá jeho hodnota je jeden korálek.
+- Korálky jsou varianty produktů v `KONF.beadProducts`. Každý produkt je jedna záložka v návrhu (`{ name: 'Korálky 6 mm', url: '/koralek-6mm/', mm: 6 }`), první je vybraná. `mm` je průměr korálků v záložce. Produkt má jeden parametr variant (např. **Koralek**, **Písmenko**) a každá jeho hodnota je jeden korálek.
 - Každá varianta musí mít přiřazenou fotku. Bez fotek Shoptet ukáže varianty jako rozbalovací seznam a návrh je nenajde.
-- Průměr korálku se píše do názvu varianty, např. `Ametyst (8 mm)`. Když v názvu chybí, počítá se 8 mm.
+- Když má jeden korálek jiný průměr než zbytek záložky, napiš ho do názvu varianty, např. `Ametyst (10 mm)`.
 - Fotka korálku: čtvercové PNG s průhledným pozadím, stačí asi 300 × 300 px.
 - Vyprodaný korálek nebo Návrh náramku košík odmítne.
 - Do košíku jde Návrh náramku a korálky v potřebném počtu. Pořadí korálků a délka náramku se v objednávce vepíšou do poznámky pro prodejce.
