@@ -282,7 +282,12 @@ document.addEventListener("DOMContentLoaded", function () {
 (function () {
     var KONF = {
         page: { bodyClass: 'in-navrhnout-naramek', url: '/navrh-naramku/' },
-        beadProducts: ['/koralek/'], // produkty s korálky ve variantách; každý produkt je jedna záložka (Kameny, Písmena…)
+        // záložky s korálky: každá je jeden produkt, korálky jsou jeho varianty; první záložka je vybraná
+        beadProducts: [
+            { name: 'Korálky', url: '/koralek/' },
+            { name: 'Bílá písmenka', url: '/pismenko-bile/' },
+            { name: 'Černá písmenka', url: '/pismenko-cerne/' }
+        ],
         defaultBeadMm: 8,
         wrist: { min: 12, max: 24, step: 0.5, value: 16, extraCm: 2 },
         toleranceCm: 0.5, // o kolik může být hotový náramek kratší, než vychází ze zápěstí
@@ -446,9 +451,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // každý produkt z KONF.beadProducts je jedna skupina, jeho varianty jsou korálky
     function loadGroups() {
-        return Promise.all(KONF.beadProducts.map(function (url) {
-            return fetchDoc(url).then(function (doc) {
-                return { name: doc.querySelector('.p-detail-inner-header h1').textContent.trim(), beads: readVariants(doc) };
+        return Promise.all(KONF.beadProducts.map(function (p) {
+            return fetchDoc(p.url).then(function (doc) {
+                return { name: p.name, beads: readVariants(doc) };
             });
         })).then(function (groups) {
             return groups.filter(function (g) {
