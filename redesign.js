@@ -288,7 +288,8 @@ document.addEventListener("DOMContentLoaded", function () {
             { name: 'Korálky 8 mm', url: '/koralek/', mm: 8 },
             { name: 'Korálky 6 mm', url: '/koralek-6mm/', mm: 6 },
             { name: 'Bílá písmenka', url: '/pismenko-bile/', mm: 6 },
-            { name: 'Černá písmenka', url: '/pismenko-cerne/', mm: 6 }
+            { name: 'Černá písmenka', url: '/pismenko-cerne/', mm: 6 },
+            { name: 'Ozdoby', url: '/ozdroby/', mm: 8 }
         ],
         defaultBeadMm: 8,
         wrist: { min: 12, max: 24, step: 0.5, value: 16, extraCm: 2 },
