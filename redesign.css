@@ -1340,6 +1340,12 @@ textarea:focus {
     color: var(--rd-muted);
 }
 
+/* „Odebrat náramek" pod počtem kusů */
+.cart-table .p-quantity .rd-navrh__remove {
+    display: block;
+    margin: 8px auto 0;
+}
+
 .rd-recap-navrh > div:first-child {
     display: flex;
     align-items: center;
