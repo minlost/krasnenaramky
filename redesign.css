@@ -14,6 +14,7 @@
     --rd-accent: #A65A38;      /* terakota – tlačítka, odkazy */
     --rd-accent-hover: #8F4A2E;
     --rd-accent-soft: #F4E4DA;
+    --rd-brown: #5C3D2E;       /* tmavě hnědá – najetí myší na produkt, našeptávač */
     --rd-green: #4F6B3E;       /* skladem */
     --rd-dark: #2B2420;        /* hlavička */
     --rd-on-dark: #F6EFE6;
@@ -217,6 +218,21 @@ textarea:focus {
 #navigation .submenu-arrow,
 #navigation .menu-level-2 {
     display: none !important;
+}
+
+/* našeptávač vyhledávání: texty tmavě hnědé (terakota působila jako vyprodané), cena v barvě textu */
+.search-whisperer a,
+.search-whisperer .p-name {
+    color: var(--rd-brown);
+}
+
+.search-whisperer a:hover,
+.search-whisperer a:hover .p-name {
+    color: var(--rd-text);
+}
+
+.search-whisperer .price-final {
+    color: var(--rd-text);
 }
 
 /* ---------- Drobečková navigace ---------- */
@@ -432,7 +448,7 @@ textarea:focus {
 }
 
 .rd-cat:hover .rd-cat__label {
-    color: var(--rd-accent);
+    color: var(--rd-brown);
 }
 
 /* záložka „Novinky" jako nadpis sekce */
@@ -541,7 +557,7 @@ textarea:focus {
 
 .products-block .p .name:hover {
     text-decoration: none;
-    color: var(--rd-accent);
+    color: var(--rd-brown);
 }
 
 .products-block > div .p .availability {
@@ -657,7 +673,7 @@ textarea:focus {
 }
 
 .subcategories.with-image li a:hover {
-    border-color: var(--rd-accent);
+    border-color: var(--rd-brown);
     box-shadow: var(--rd-shadow-hover);
 }
 
