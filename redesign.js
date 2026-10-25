@@ -15,7 +15,7 @@
             eyebrow: 'Ruční výroba v České republice',
             lead: 'Náramky z přírodních kamenů, párové náramky i šperky se jménem. Dárek, který má svůj příběh.',
             button: { text: 'Vybrat náramek', url: '/naramky/' },
-            link: { text: 'Šperky se jménem', url: '/personalizovane-sperky/' }
+            link: { text: 'Gravírování', url: '/personalizovane-sperky/' }
         },
         benefits: [
             { icon: 'truck', title: 'Rychlé doručení', text: 'Zásilkovna i na adresu' },
