@@ -25,8 +25,9 @@
         ],
         categoriesTitle: 'Vyberte si kategorii',
         categories: [
-            { title: 'Náramky', url: '/naramky/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3153-1_letni-laska-set.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
-            { title: 'Pro páry', url: '/naramky-pro-pary/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3068_naramky-pro-pary-inicialy-stribrne.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
+            // zoom přiblíží fotku, aby v kruhu nebyly vidět bílé okraje, které Shoptet doplnil
+            { title: 'Náramky', url: '/naramky/', zoom: 1.12, image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3153-1_letni-laska-set.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
+            { title: 'Pro páry', url: '/naramky-pro-pary/', zoom: 1.12, image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3068_naramky-pro-pary-inicialy-stribrne.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Gravírování', url: '/personalizovane-sperky/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/1938-1_naramek-obruc-s-vlastnim-textem-zlata-rosegold-stribrna-cerna.png?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Náhrdelníky', url: '/nahrdelniky/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/2217_nahrdelnik-ametyst.png?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Na provázku', url: '/naramky-simple/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3046_naramky-pro-pary-simple-lava-a-howlit--3-mm-.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
@@ -119,7 +120,7 @@
         cats.className = 'rd-cats';
         cats.innerHTML = '<div class="rd-wrap"><div class="rd-section-head"><h2>' + esc(RD_CONFIG.categoriesTitle) + '</h2></div><div class="rd-cats__grid">' +
             RD_CONFIG.categories.map(function (c) {
-                return '<a class="rd-cat" href="' + esc(c.url) + '"><span class="rd-cat__img"><img src="' + esc(c.image) + '" alt="" loading="lazy"></span><span class="rd-cat__label">' + esc(c.title) + '</span></a>';
+                return '<a class="rd-cat" href="' + esc(c.url) + '"><span class="rd-cat__img"><img src="' + esc(c.image) + '" alt="" loading="lazy"' + (c.zoom ? ' style="--rd-zoom:' + c.zoom + '"' : '') + '></span><span class="rd-cat__label">' + esc(c.title) + '</span></a>';
             }).join('') + '</div></div>';
 
         var p = RD_CONFIG.promo;
@@ -160,13 +161,18 @@
     }
 
     // Navrhnout náramek na druhé místo v menu (v hlavní liště i v „Více"), aby na počítači nespadl do „Více";
-    // které položky se do lišty vejdou, přepočítá skript Shoptetu
+    // které položky se do lišty vejdou, přepočítá skript Shoptetu.
+    // Podkategorie Korálky do návrhu je jen pro konfigurátor, z menu se odebere i se šipkou.
     function promoteMenuItem() {
         var moved = false;
         Array.prototype.forEach.call(document.querySelectorAll('ul.menu-level-1'), function (ul) {
             var li = ul.querySelector(':scope > li.' + RD_CONFIG.promo.menuItem);
             if (!li) return;
             li.classList.add('rd-menu-promo');
+            li.classList.remove('ext');
+            Array.prototype.forEach.call(li.querySelectorAll('.menu-level-2, .submenu-arrow'), function (el) { el.remove(); });
+            var link = li.querySelector(':scope > a');
+            if (link) link.removeAttribute('aria-haspopup');
             if (ul.children[1] && ul.children[1] !== li) {
                 ul.insertBefore(li, ul.children[1]);
                 moved = true;
