@@ -6,6 +6,7 @@
    3. Náhled písma u gravírování
    4. Druhá fotka produktu po najetí myší
    5. Návrh náramku z korálků (nastavení v KONF)
+   6. Návrh simple náramku na provázku (nastavení v KONF)
    ========================================================= */
 
 /* ---------- 1. Bloky úvodní stránky ---------- */
@@ -1213,6 +1214,478 @@ document.addEventListener("DOMContentLoaded", function () {
                     init();
                 }
             }
+        }
+    } catch (e) {
+        document.documentElement.classList.remove('rd-js');
+    }
+})();
+
+/* ---------- 6. Návrh simple náramku na provázku ---------- */
+// Stránka je kategorie Návrh simple náramku (podkategorie Navrhnout náramek, v menu není).
+// Zatím jen náhled: jeden náramek nebo pár, barva provázku, písmenka, čísla a 6mm korálky
+// (varianty produktu KONF.beadProduct). Do košíku se zatím nic nevkládá.
+(function () {
+    var KONF = {
+        bodyClass: 'in-navrh-simple-naramku',
+        // barvy provázku; hex je jen barva v náhledu
+        colors: [
+            { name: 'Růžová', hex: '#E9A2B6' },
+            { name: 'Žlutá', hex: '#EFC53F' },
+            { name: 'Zlatá', hex: '#C49A45' },
+            { name: 'Zelená', hex: '#3E7A4A' },
+            { name: 'Šedá', hex: '#8C8B88' },
+            { name: 'Červená', hex: '#B8262C' },
+            { name: 'Světle modrá', hex: '#8DC0E3' },
+            { name: 'Tmavě modrá', hex: '#1E2C55' },
+            { name: 'Fialová', hex: '#6A4796' },
+            { name: 'Hnědá', hex: '#6A4128' },
+            { name: 'Černá', hex: '#1C1A19' }
+        ],
+        defaultColor: 'Černá',
+        letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+        // nejvíc kusů na jeden náramek
+        maxLetters: 5,
+        maxBeads: 5,
+        beadProduct: '/koralek-6mm/',
+        lead: 'Vyberte barvu provázku a navlékněte na něj písmenka, čísla nebo korálky. Kousek odeberete kliknutím na něj v náhledu.',
+        note: 'Náhled je pouze ilustrativní. Každý náramek vážeme ručně, skutečný se proto může mírně lišit.'
+    };
+    var TABS = [
+        { name: 'Černá písmenka', tone: 'black' },
+        { name: 'Bílá písmenka', tone: 'white' },
+        { name: 'Korálky 6 mm', beads: true }
+    ];
+
+    // náhled má 400 × 400 jednotek, 1 mm ≈ 3,4 jednotky
+    var CORD = 3.4; // provázek 1 mm
+    var LETTER = 24; // písmenko 7 mm
+    var BEAD = 21; // korálek 6 mm
+    var GAP = 0.8; // mezera mezi kousky na provázku
+    var KNOT_ANGLE = 64 * Math.PI / 180; // posuvné uzly: úhel od vrcholu náramku na obě strany
+    var TAIL = 26; // délka konce provázku za posuvným uzlem
+    var STEPS = 240;
+    // tvar a poloha náramků; wobble dělá tvar mírně nepravidelný jako u provázku položeného na stole
+    var LAYOUT = {
+        single: [{ cx: 200, cy: 205, rx: 150, ry: 130, tilt: -3, wobble: [0.035, 0.6, 0.02, 2.2] }],
+        pair: [
+            { cx: 194, cy: 148, rx: 150, ry: 106, tilt: -4, wobble: [0.035, 0.6, 0.02, 2.2] },
+            { cx: 210, cy: 262, rx: 132, ry: 112, tilt: 3, wobble: [0.03, 2.4, 0.022, 0.7] }
+        ]
+    };
+
+    function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function colorOf(name) {
+        return KONF.colors.filter(function (c) { return c.name === name; })[0] || KONF.colors[0];
+    }
+
+    function charmLabel(c) {
+        return c.bead ? c.name : (/\d/.test(c.char) ? 'Číslo ' : 'Písmenko ') + c.char;
+    }
+
+    // původní fotka korálku (zmenšené verze Shoptet doplní na 4 : 3, malý korálek by se v nich ztratil)
+    function originalImage(url) {
+        var ts = (url.match(/[?&]ts=([^&]+)/) || [])[1];
+        return url.replace('/shop/big/', '/shop/orig/').replace(/\?.*$/, ts ? '?' + ts : '');
+    }
+
+    // varianty produktu s 6mm korálky; název varianty je „Korálek: Ametyst (6 mm)", korálek se jmenuje „Ametyst"
+    function loadBeads() {
+        return fetch(KONF.beadProduct, { credentials: 'same-origin' }).then(function (res) {
+            if (!res.ok) {
+                throw new Error('Stránku ' + KONF.beadProduct + ' se nepodařilo načíst.');
+            }
+            return res.text();
+        }).then(function (html) {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            return Array.prototype.map.call(doc.querySelectorAll('#simple-variants input[name="priceId"]:not(.variant-default)'), function (input) {
+                return {
+                    bead: true,
+                    name: doc.getElementById(input.getAttribute('aria-labelledby')).textContent.replace(/^[^:]*:\s*/, '').replace(/\s*\([^)]*\)\s*$/, '').trim(),
+                    image: originalImage(input.getAttribute('data-big'))
+                };
+            });
+        });
+    }
+
+    /* ---------- Kreslení ---------- */
+    // bod náramku v úhlu a (0 = nahoře, po směru hodinových ručiček)
+    function point(o, a) {
+        var r = 1 + o.wobble[0] * Math.sin(2 * a + o.wobble[1]) + o.wobble[2] * Math.sin(3 * a + o.wobble[3]);
+        return [o.cx + o.rx * r * Math.sin(a), o.cy - o.ry * r * Math.cos(a)];
+    }
+
+    // směr provázku, kolmice ven z náramku a natočení ve stupních
+    function frame(o, a) {
+        var p = point(o, a - 0.001);
+        var q = point(o, a + 0.001);
+        var l = Math.hypot(q[0] - p[0], q[1] - p[1]);
+        var t = [(q[0] - p[0]) / l, (q[1] - p[1]) / l];
+        return { n: [t[1], -t[0]], deg: Math.atan2(t[1], t[0]) * 180 / Math.PI };
+    }
+
+    // body po obvodu a jejich vzdálenost od vrcholu
+    function sample(o) {
+        var pts = [];
+        var len = [0];
+        for (var i = 0; i <= STEPS; i++) {
+            pts.push(point(o, i / STEPS * 2 * Math.PI));
+            if (i) {
+                len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+            }
+        }
+        return { pts: pts, len: len };
+    }
+
+    // bod na provázku ve vzdálenosti s od vrcholu; natočení je takové, aby písmenko na spodku stálo rovně
+    function along(sm, s) {
+        var i = 1;
+        while (i < STEPS && sm.len[i] < s) {
+            i++;
+        }
+        var p = sm.pts[i - 1];
+        var q = sm.pts[i];
+        var k = (s - sm.len[i - 1]) / (sm.len[i] - sm.len[i - 1]);
+        return { x: p[0] + (q[0] - p[0]) * k, y: p[1] + (q[1] - p[1]) * k, deg: Math.atan2(p[1] - q[1], p[0] - q[0]) * 180 / Math.PI };
+    }
+
+    function pathOf(pts, closed) {
+        return 'M' + pts.map(function (p) { return p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('L') + (closed ? 'Z' : '');
+    }
+
+    // provázek: barva, jemné kroucení a lesk voskované šňůrky
+    function cord(d, hex) {
+        return '<path d="' + d + '" stroke="' + hex + '" stroke-width="' + CORD + '"/>' +
+            '<path d="' + d + '" stroke="#000" stroke-opacity=".16" stroke-width="' + (CORD * 0.7) + '" stroke-dasharray="1.6 1.9"/>' +
+            '<path d="' + d + '" stroke="#fff" stroke-opacity=".3" stroke-width="' + (CORD * 0.3) + '" transform="translate(-.5 -.6)"/>';
+    }
+
+    // zatavený konec provázku
+    function tip(p, hex) {
+        var r = (CORD * 0.62).toFixed(2);
+        return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + r + '" fill="' + hex + '"/>' +
+            '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + r + '" fill="#000" fill-opacity=".3"/>';
+    }
+
+    // uzel: ovál ve směru provázku se stínováním a dvěma závity
+    function knot(x, y, deg, rx, ry, hex) {
+        return '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + deg.toFixed(1) + ')">' +
+            '<ellipse rx="' + rx + '" ry="' + ry + '" fill="' + hex + '"/>' +
+            '<ellipse rx="' + rx + '" ry="' + ry + '" fill="url(#rd-simple-knot)"/>' +
+            '<path d="M' + (-rx * 0.3) + ' ' + (-ry * 0.9) + 'q' + (rx * 0.35) + ' ' + (ry * 0.9) + ' 0 ' + (ry * 1.8) +
+                'M' + (rx * 0.25) + ' ' + (-ry * 0.9) + 'q' + (rx * 0.35) + ' ' + (ry * 0.9) + ' 0 ' + (ry * 1.8) + '" stroke="#000" stroke-opacity=".28" stroke-width=".8"/>' +
+            '<ellipse cx="' + (-rx * 0.25) + '" cy="' + (-ry * 0.4) + '" rx="' + (rx * 0.4) + '" ry="' + (ry * 0.22) + '" fill="#fff" fill-opacity=".3"/>' +
+        '</g>';
+    }
+
+    // lesklé kulaté písmenko (jako na fotkách písmenek v e-shopu)
+    function letterBead(ch, tone, d) {
+        var r = d / 2;
+        var black = tone === 'black';
+        var size = d * 0.56;
+        return '<circle r="' + r + '" fill="url(#rd-simple-' + tone + ')"' + (black ? '' : ' stroke="#2F2621" stroke-opacity=".3" stroke-width=".6"') + '/>' +
+            '<ellipse cy="' + (-r * 0.72) + '" rx="' + (r * 0.46) + '" ry="' + (r * 0.13) + '" fill="#fff" fill-opacity="' + (black ? 0.45 : 0.9) + '"/>' +
+            '<text class="rd-simple__char" y="' + (size * 0.36).toFixed(2) + '" font-size="' + size.toFixed(2) + '" fill="' + (black ? '#fff' : '#1D1A18') + '">' + esc(ch) + '</text>';
+    }
+
+    function charmSvg(c, d) {
+        return c.bead
+            ? '<image href="' + esc(c.image) + '" x="' + (-d / 2) + '" y="' + (-d / 2) + '" width="' + d + '" height="' + d + '"/>'
+            : letterBead(c.char, c.tone, d);
+    }
+
+    // jeden náramek: provázek dokola, nahoře dvojitý s posuvnými uzly a konci, dole kousky mezi dvěma uzlíky
+    function bracelet(o, br, b, animateLast) {
+        var hex = colorOf(br.color).hex;
+        var sm = sample(o);
+        var tailA = TAIL / ((o.rx + o.ry) / 2);
+        var outer = [];
+        for (var i = 0; i <= 60; i++) {
+            var a = -(KNOT_ANGLE + tailA) + i / 30 * (KNOT_ANGLE + tailA);
+            var over = Math.max(0, (Math.abs(a) - KNOT_ANGLE) / tailA);
+            var f = frame(o, a);
+            var p = point(o, a);
+            var d = CORD * 1.05 + 15 * Math.pow(over, 1.6);
+            outer.push([p[0] + f.n[0] * d, p[1] + f.n[1] * d]);
+        }
+
+        var svg = cord(pathOf(sm.pts, true), hex) + cord(pathOf(outer), hex) + tip(outer[0], hex) + tip(outer[60], hex);
+        [-KNOT_ANGLE, KNOT_ANGLE].forEach(function (a) {
+            var f = frame(o, a);
+            var p = point(o, a);
+            svg += knot(p[0] + f.n[0] * CORD * 0.55, p[1] + f.n[1] * CORD * 0.55, f.deg, 8.5, 6.4, hex);
+        });
+
+        // kousky jdou zleva doprava, uprostřed spodní části náramku
+        if (br.charms.length) {
+            var sizes = br.charms.map(function (c) { return c.bead ? BEAD : LETTER; });
+            var group = sizes.reduce(function (s, x) { return s + x + GAP; }, -GAP);
+            var bottom = sm.len[STEPS / 2];
+            var s = bottom + group / 2;
+            [s + 5, bottom - group / 2 - 5].forEach(function (at) {
+                var k = along(sm, at);
+                svg += knot(k.x, k.y, k.deg, 4, 3.4, hex);
+            });
+            br.charms.forEach(function (c, j) {
+                var pos = along(sm, s - sizes[j] / 2);
+                var label = 'Odebrat: ' + charmLabel(c);
+                s -= sizes[j] + GAP;
+                svg += '<g class="rd-simple__charm" transform="translate(' + pos.x.toFixed(1) + ' ' + pos.y.toFixed(1) + ') rotate(' + pos.deg.toFixed(1) + ')"' +
+                    ' data-b="' + b + '" data-i="' + j + '" role="button" tabindex="0" aria-label="' + esc(label) + '">' +
+                    '<title>' + esc(label) + '</title>' +
+                    '<g' + (animateLast && j === br.charms.length - 1 ? ' class="rd-simple__new"' : '') + '>' + charmSvg(c, sizes[j]) + '</g>' +
+                '</g>';
+            });
+        }
+        return '<g filter="url(#rd-simple-shadow)"><g transform="rotate(' + o.tilt + ' ' + o.cx + ' ' + o.cy + ')" fill="none" stroke-linecap="round" stroke-linejoin="round">' + svg + '</g></g>';
+    }
+
+    var DEFS = '<defs>' +
+        '<filter id="rd-simple-shadow" x="-10%" y="-10%" width="120%" height="125%"><feDropShadow dx="1.2" dy="2.6" stdDeviation="1.6" flood-color="#2F2621" flood-opacity=".3"/></filter>' +
+        '<radialGradient id="rd-simple-knot" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>' +
+        '<radialGradient id="rd-simple-black" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#4A4846"/><stop offset=".55" stop-color="#161514"/><stop offset="1" stop-color="#000"/></radialGradient>' +
+        '<radialGradient id="rd-simple-white" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".7" stop-color="#F4F1EC"/><stop offset="1" stop-color="#D6CFC6"/></radialGradient>' +
+    '</defs>';
+
+    /* ---------- Konfigurátor ---------- */
+    function build() {
+        var content = document.getElementById('content');
+        if (!content) {
+            document.documentElement.classList.remove('rd-js');
+            return;
+        }
+
+        var state = {
+            pair: false,
+            active: 0,
+            tab: 0,
+            beads: null,
+            beadsError: '',
+            bracelets: [{ color: KONF.defaultColor, charms: [] }, { color: KONF.defaultColor, charms: [] }]
+        };
+
+        // na mobilu se bloky řadí jinak (počet náramků, náhled, barva, kousky), viz CSS
+        var root = document.createElement('section');
+        root.className = 'rd-konf rd-simple';
+        root.innerHTML =
+            '<header class="rd-konf__head">' +
+                '<p class="rd-eyebrow">Náramek na provázku</p>' +
+                '<p class="rd-konf__lead">' + esc(KONF.lead) + '</p>' +
+            '</header>' +
+            '<div class="rd-konf__layout">' +
+                '<div class="rd-konf__side">' +
+                    '<div class="rd-konf__preview">' +
+                        '<svg class="rd-simple__svg" viewBox="0 0 400 400" role="group" aria-label="Náhled náramku">' + DEFS + '<g class="rd-simple__stage"></g></svg>' +
+                        '<div class="rd-konf__tools">' +
+                            '<button type="button" class="rd-konf__undo">Vrátit poslední</button>' +
+                            '<button type="button" class="rd-konf__clear">Začít znovu</button>' +
+                        '</div>' +
+                        '<p class="rd-konf__note">' + esc(KONF.note) + '</p>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="rd-konf__panel">' +
+                    '<div class="rd-simple__mode">' +
+                        '<p class="rd-simple__label">Kolik náramků</p>' +
+                        '<div class="rd-konf__tabs">' +
+                            '<button type="button" class="rd-konf__tab" data-pair="0">Jeden náramek</button>' +
+                            '<button type="button" class="rd-konf__tab" data-pair="1">Pár náramků</button>' +
+                        '</div>' +
+                        '<div class="rd-simple__which" hidden>' +
+                            '<p class="rd-simple__label">Upravujete</p>' +
+                            '<div class="rd-konf__tabs">' +
+                                '<button type="button" class="rd-konf__tab" data-which="0">Horní náramek</button>' +
+                                '<button type="button" class="rd-konf__tab" data-which="1">Spodní náramek</button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="rd-simple__color-field">' +
+                        '<p class="rd-simple__label">Barva provázku: <span class="rd-simple__color-name"></span></p>' +
+                        '<div class="rd-simple__colors">' + KONF.colors.map(function (c) {
+                            return '<button type="button" class="rd-simple__color" data-color="' + esc(c.name) + '" style="--rd-cord:' + c.hex + '" title="' + esc(c.name) + '" aria-label="' + esc(c.name) + '"></button>';
+                        }).join('') + '</div>' +
+                    '</div>' +
+                    '<div class="rd-konf__picker">' +
+                        '<p class="rd-simple__label">Písmenka, čísla a korálky <small class="rd-simple__limits"></small></p>' +
+                        '<div class="rd-konf__tabs rd-simple__tabs"></div>' +
+                        '<div class="rd-konf__grid-wrap"></div>' +
+                        '<div class="rd-konf__msg" role="status"></div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+
+        var el = function (cls) { return root.querySelector('.rd-' + cls); };
+        var stage = el('simple__stage');
+        var gridWrap = el('konf__grid-wrap');
+        var msg = el('konf__msg');
+
+        // nadpis kategorie se přesune do konfigurátoru
+        var h1 = content.querySelector('.category-top h1');
+        if (h1) {
+            el('konf__head').insertBefore(h1, el('konf__lead'));
+        }
+        content.insertBefore(root, content.firstChild);
+
+        function current() {
+            return state.bracelets[state.active];
+        }
+
+        function counts(br) {
+            var beads = br.charms.filter(function (c) { return c.bead; }).length;
+            return { letters: br.charms.length - beads, beads: beads };
+        }
+
+        function renderPreview(animateLast) {
+            var layout = state.pair ? LAYOUT.pair : LAYOUT.single;
+            var svg = '';
+            // horní náramek páru leží navrchu
+            for (var b = layout.length - 1; b >= 0; b--) {
+                svg += bracelet(layout[b], state.bracelets[b], b, animateLast && b === state.active);
+            }
+            stage.innerHTML = svg;
+        }
+
+        function renderPicker() {
+            var tab = TABS[state.tab];
+            el('simple__tabs').innerHTML = TABS.map(function (t, i) {
+                return '<button type="button" class="rd-konf__tab" data-tab="' + i + '" aria-pressed="' + (i === state.tab) + '">' + esc(t.name) + '</button>';
+            }).join('');
+            if (!tab.beads) {
+                gridWrap.innerHTML = '<ul class="rd-simple__letters">' + KONF.letters.split('').map(function (ch) {
+                    return '<li><button type="button" class="rd-simple__letter" data-char="' + esc(ch) + '" aria-label="' + esc(charmLabel({ char: ch })) + '">' +
+                        '<svg viewBox="-13 -13 26 26" aria-hidden="true">' + letterBead(ch, tab.tone, 24) + '</svg></button></li>';
+                }).join('') + '</ul>';
+            } else if (state.beads) {
+                gridWrap.innerHTML = '<ul class="rd-konf__grid">' + state.beads.map(function (c, i) {
+                    return '<li><button type="button" class="rd-konf__item" data-bead="' + i + '">' +
+                        '<span class="rd-konf__item-img"><img src="' + esc(c.image) + '" alt="" loading="lazy"></span>' +
+                        '<span class="rd-konf__item-name">' + esc(c.name) + '</span>' +
+                    '</button></li>';
+                }).join('') + '</ul>';
+            } else {
+                gridWrap.innerHTML = '<p class="rd-konf__loading">' + esc(state.beadsError || 'Načítám korálky…') + '</p>';
+            }
+            renderState();
+        }
+
+        // přepínače, vybraná barva, počty a co ještě jde přidat
+        function renderState() {
+            var br = current();
+            var n = counts(br);
+            Array.prototype.forEach.call(root.querySelectorAll('[data-pair]'), function (btn) {
+                btn.setAttribute('aria-pressed', String(btn.getAttribute('data-pair') === (state.pair ? '1' : '0')));
+            });
+            Array.prototype.forEach.call(root.querySelectorAll('[data-which]'), function (btn) {
+                btn.setAttribute('aria-pressed', String(+btn.getAttribute('data-which') === state.active));
+            });
+            Array.prototype.forEach.call(root.querySelectorAll('[data-color]'), function (btn) {
+                btn.setAttribute('aria-pressed', String(btn.getAttribute('data-color') === br.color));
+            });
+            el('simple__which').hidden = !state.pair;
+            el('simple__color-name').textContent = br.color;
+            el('simple__limits').textContent = 'písmenka a čísla ' + n.letters + '/' + KONF.maxLetters + ' · korálky ' + n.beads + '/' + KONF.maxBeads;
+            Array.prototype.forEach.call(gridWrap.querySelectorAll('.rd-simple__letter'), function (btn) {
+                btn.setAttribute('aria-disabled', String(n.letters >= KONF.maxLetters));
+            });
+            Array.prototype.forEach.call(gridWrap.querySelectorAll('.rd-konf__item'), function (btn) {
+                btn.setAttribute('aria-disabled', String(n.beads >= KONF.maxBeads));
+            });
+            el('konf__undo').disabled = !br.charms.length;
+            el('konf__clear').disabled = !state.bracelets.slice(0, state.pair ? 2 : 1).some(function (x) { return x.charms.length; });
+        }
+
+        function change(animateLast) {
+            msg.textContent = '';
+            renderPreview(animateLast);
+            renderState();
+        }
+
+        function addCharm(c) {
+            var n = counts(current());
+            if (c.bead ? n.beads >= KONF.maxBeads : n.letters >= KONF.maxLetters) {
+                msg.textContent = c.bead
+                    ? 'Na jeden náramek se vejde nejvýš ' + KONF.maxBeads + ' korálků.'
+                    : 'Na jeden náramek se vejde nejvýš ' + KONF.maxLetters + ' písmenek a čísel.';
+                return;
+            }
+            current().charms.push(c);
+            change(true);
+        }
+
+        function removeCharm(g) {
+            state.bracelets[+g.getAttribute('data-b')].charms.splice(+g.getAttribute('data-i'), 1);
+            change();
+        }
+
+        root.addEventListener('click', function (e) {
+            var charm = e.target.closest('.rd-simple__charm');
+            if (charm) {
+                removeCharm(charm);
+                return;
+            }
+            var t = e.target.closest('button');
+            if (!t) {
+                return;
+            }
+            if (t.hasAttribute('data-pair')) {
+                state.pair = t.getAttribute('data-pair') === '1';
+                state.active = 0;
+                change();
+            } else if (t.hasAttribute('data-which')) {
+                state.active = +t.getAttribute('data-which');
+                renderState();
+            } else if (t.hasAttribute('data-color')) {
+                current().color = t.getAttribute('data-color');
+                change();
+            } else if (t.hasAttribute('data-tab')) {
+                state.tab = +t.getAttribute('data-tab');
+                renderPicker();
+            } else if (t.hasAttribute('data-char')) {
+                addCharm({ char: t.getAttribute('data-char'), tone: TABS[state.tab].tone });
+            } else if (t.hasAttribute('data-bead')) {
+                addCharm(state.beads[t.getAttribute('data-bead')]);
+            } else if (t.classList.contains('rd-konf__undo')) {
+                current().charms.pop();
+                change();
+            } else if (t.classList.contains('rd-konf__clear')) {
+                state.bracelets.forEach(function (x) { x.charms = []; });
+                change();
+            }
+        });
+
+        // kousky v náhledu jdou odebrat i z klávesnice
+        stage.addEventListener('keydown', function (e) {
+            var charm = e.target.closest('.rd-simple__charm');
+            if (charm && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                removeCharm(charm);
+            }
+        });
+
+        change();
+        renderPicker();
+
+        loadBeads().then(function (beads) {
+            if (!beads.length) {
+                throw new Error('Zatím tu nejsou žádné korálky.');
+            }
+            state.beads = beads;
+        }).catch(function (err) {
+            state.beadsError = 'Korálky se nepodařilo načíst. ' + err.message;
+        }).then(function () {
+            if (TABS[state.tab].beads) {
+                renderPicker();
+            }
+        });
+    }
+
+    try {
+        var body = document.body;
+        if (body.classList.contains(KONF.bodyClass) && body.classList.contains('type-category')) {
+            build();
         }
     } catch (e) {
         document.documentElement.classList.remove('rd-js');

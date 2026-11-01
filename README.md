@@ -5,7 +5,7 @@ Vlastní vzhled pro [krasnenaramky.cz](https://www.krasnenaramky.cz/) (Shoptet, 
 | Soubor | Co dělá |
 | --- | --- |
 | `redesign.css` | Barvy, písma a vzhled celého webu |
-| `redesign.js` | Bloky úvodní stránky (texty a obrázky v `RD_CONFIG`), chat Smartsupp, náhled písma u gravírování, druhá fotka produktu po najetí myší a návrh náramku z korálků (nastavení v `KONF`) |
+| `redesign.js` | Bloky úvodní stránky (texty a obrázky v `RD_CONFIG`), chat Smartsupp, náhled písma u gravírování, druhá fotka produktu po najetí myší, návrh náramku z korálků a návrh simple náramku (nastavení v `KONF`) |
 | `hlavicka.html` | Kód do Shoptetu: Vzhled a obsah → Editor → HTML kód → **Hlavička** |
 | `zapati.html` | **Celý** obsah pole v Shoptetu: Vzhled a obsah → Editor → HTML kód → **Zápatí** (jen odkaz na `redesign.js`) |
 
@@ -32,3 +32,10 @@ V administraci Shoptetu se při změně nic neupravuje.
 - Vyprodaný korálek nebo Návrh náramku košík odmítne.
 - Do košíku jde Návrh náramku a korálky v potřebném počtu. Pořadí korálků a délka náramku se v objednávce vepíšou do poznámky pro prodejce.
 - Texty, rozsah zápěstí a o kolik je náramek delší než zápěstí se mění v `KONF` v oddílu 5 souboru `redesign.js`.
+
+## Návrh simple náramku (`/navrh-simple-naramku/`)
+
+- Stránka je kategorie **Návrh simple náramku**, podkategorie Navrhnout náramek. V menu není a zatím není nikde prolinkovaná. Kategorie musí zůstat viditelná, jinak stránka vrátí 404.
+- Zatím je to jen náhled, do košíku se nic nevkládá. Zákazník si vybere jeden náramek nebo pár, barvu provázku a na každý náramek až 5 písmenek nebo čísel a až 5 korálků.
+- Písmenka a čísla se kreslí, nejsou to fotky. 6mm korálky jsou varianty produktu `/koralek-6mm/`, stejně jako v Návrhu náramku.
+- Barvy provázku (název a barva v náhledu), počet kousků na náramek a texty se mění v `KONF` v oddílu 6 souboru `redesign.js`.
