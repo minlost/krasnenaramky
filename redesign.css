@@ -190,6 +190,27 @@ textarea:focus {
         font-weight: 500;
         font-size: 15px;
     }
+
+    /* Navrhnout náramek jako obrysové tlačítko */
+    #navigation .menu-level-1 > li.rd-menu-promo > a > b {
+        padding: 6px 14px;
+        border: 1px solid #E8B08F;
+        border-radius: 999px;
+        color: #E8B08F;
+    }
+
+    #navigation .menu-level-1 > li.rd-menu-promo > a:hover > b {
+        background: #E8B08F;
+        color: var(--rd-dark);
+    }
+}
+
+/* mobilní menu: Navrhnout náramek v barvě odkazů */
+@media (max-width: 991px) {
+    #navigation .menu-level-1 > li.rd-menu-promo > a {
+        color: var(--rd-accent);
+        font-weight: 600;
+    }
 }
 
 .navigation-buttons a,
@@ -449,6 +470,98 @@ textarea:focus {
 
 .rd-cat:hover .rd-cat__label {
     color: var(--rd-brown);
+}
+
+/* blok „Navrhněte si vlastní náramek" */
+.rd-promo {
+    padding: 40px 0 8px;
+}
+
+.rd-promo__inner {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    align-items: center;
+    gap: 40px;
+    padding: 48px 64px;
+    background: var(--rd-dark);
+    border-radius: 24px;
+    color: var(--rd-on-dark);
+}
+
+.rd-promo__ring {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+}
+
+.rd-promo__ring img {
+    position: absolute;
+    aspect-ratio: 1 / 1;
+    transform: translate(-50%, -50%);
+}
+
+.rd-promo .rd-eyebrow {
+    color: #E8B08F;
+}
+
+.rd-promo h2 {
+    margin: 0 0 16px;
+    font-size: clamp(28px, 2.8vw, 42px);
+    line-height: 1.15;
+    color: var(--rd-on-dark);
+}
+
+.rd-promo__lead {
+    margin: 0 0 24px;
+    max-width: 32em;
+    font-size: 17px;
+    line-height: 1.6;
+    color: #D9CCBF;
+}
+
+.rd-promo__steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 0 30px;
+    padding: 0;
+    list-style: none;
+    counter-reset: rd-step;
+}
+
+.rd-promo__steps li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    counter-increment: rd-step;
+}
+
+.rd-promo__steps li::before {
+    content: counter(rd-step);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #E8B08F;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 600;
+    color: #E8B08F;
+}
+
+.rd-promo .btn {
+    padding: 14px 30px;
+    font-size: 16px;
+}
+
+.rd-promo .btn:after {
+    display: none;
 }
 
 /* záložka „Novinky" jako nadpis sekce */
@@ -1499,6 +1612,27 @@ textarea:focus {
     .rd-cat {
         flex: 0 0 34%;
         scroll-snap-align: start;
+    }
+
+    .rd-promo__inner {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 32px 24px;
+        border-radius: 18px;
+        text-align: center;
+    }
+
+    .rd-promo__ring {
+        max-width: 240px;
+    }
+
+    .rd-promo__lead {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .rd-promo__steps {
+        align-items: center;
     }
 }
 

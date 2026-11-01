@@ -1,7 +1,7 @@
 /* =========================================================
    Krásné náramky – skripty webu
    Načítá se z GitHub Pages, odkaz je v zapati.html
-   1. Bloky úvodní stránky (texty a obrázky v RD_CONFIG)
+   1. Bloky úvodní stránky a Navrhnout náramek v menu (texty a obrázky v RD_CONFIG)
    2. Chat Smartsupp
    3. Náhled písma u gravírování
    4. Druhá fotka produktu po najetí myší
@@ -31,7 +31,33 @@
             { title: 'Náhrdelníky', url: '/nahrdelniky/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/2217_nahrdelnik-ametyst.png?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Na provázku', url: '/naramky-simple/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3046_naramky-pro-pary-simple-lava-a-howlit--3-mm-.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' },
             { title: 'Zvěrokruh', url: '/magicky-zverokruh/', image: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/255-2_naramek-se-znamenim-zverokruhu-cerny-premium--zlata-.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d' }
-        ]
+        ],
+        // blok „Navrhněte si vlastní náramek" pod kategoriemi
+        promo: {
+            eyebrow: 'Novinka',
+            title: 'Navrhněte si vlastní náramek',
+            lead: 'Vyberte si z více než 30 druhů korálků a poskládejte náramek přesně podle sebe. Ručně ho pro vás vyrobíme.',
+            steps: ['Zadejte obvod zápěstí', 'Poskládejte korálky', 'Náramek vyrobíme a pošleme'],
+            button: { text: 'Navrhnout náramek', url: '/navrh-naramku/' },
+            // kategorie v hlavním menu, která se přesune na druhé místo a zvýrazní
+            menuItem: 'menu-item-1145',
+            // kruh korálků: malé fotky variant produktu Koralek, dokola se opakují
+            beadCount: 22,
+            beadUrl: 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/related/{file}?ff=1&x=100&y=100&q=85&sg=8dda0505',
+            beads: [
+                '3410-72_ametyst--8-mm.png',
+                '3410-90_ruzenin--8-mm.png',
+                '3410-76_howlit--8-mm.png',
+                '3410-79_lapis-lazuli--8-mm.png',
+                '3410-97_apatit--do-modra-8-mm.png',
+                '3410-101_jadeit-bily--8-mm.png',
+                '3410-89_tygri-oko--8-mm.png',
+                '3410-93_citrin--8-mm.png',
+                '3410-92_cervene-tygri-oko--8-mm.png',
+                '3410-88_onyx--8-mm.png',
+                '3410-95_praskany-kristal---bily--8-mm.png'
+            ]
+        }
     };
 
     var ICONS = {
@@ -96,10 +122,31 @@
                 return '<a class="rd-cat" href="' + esc(c.url) + '"><span class="rd-cat__img"><img src="' + esc(c.image) + '" alt="" loading="lazy"></span><span class="rd-cat__label">' + esc(c.title) + '</span></a>';
             }).join('') + '</div></div>';
 
+        var p = RD_CONFIG.promo;
+        var ring = '';
+        for (var i = 0; i < p.beadCount; i++) {
+            var angle = i / p.beadCount * 2 * Math.PI - Math.PI / 2;
+            ring += '<img src="' + esc(p.beadUrl.replace('{file}', p.beads[i % p.beads.length])) + '" alt="" loading="lazy" style="left:' +
+                (50 + 40 * Math.cos(angle)).toFixed(2) + '%;top:' + (50 + 40 * Math.sin(angle)).toFixed(2) + '%;width:' + (2 * Math.PI * 40 / p.beadCount).toFixed(2) + '%">';
+        }
+        var promo = document.createElement('section');
+        promo.className = 'rd-promo';
+        promo.innerHTML = '<div class="rd-wrap"><div class="rd-promo__inner">' +
+            '<a class="rd-promo__ring" href="' + esc(p.button.url) + '" tabindex="-1" aria-hidden="true">' + ring + '</a>' +
+            '<div class="rd-promo__text">' +
+                '<p class="rd-eyebrow">' + esc(p.eyebrow) + '</p>' +
+                '<h2>' + esc(p.title) + '</h2>' +
+                '<p class="rd-promo__lead">' + esc(p.lead) + '</p>' +
+                '<ol class="rd-promo__steps">' + p.steps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' +
+                '<a class="btn btn-conversion" href="' + esc(p.button.url) + '">' + esc(p.button.text) + '</a>' +
+            '</div>' +
+        '</div></div>';
+
         var anchor = content.querySelector('.banners-row') || content.firstChild;
         content.insertBefore(hero, anchor);
         content.insertBefore(benefits, anchor);
         content.insertBefore(cats, anchor);
+        content.insertBefore(promo, anchor);
 
         // úvodní text bez obsahu (jen nadpis a obrázek s ikonkami) se schová
         var welcome = document.querySelector('.welcome');
@@ -112,7 +159,26 @@
         }
     }
 
+    // Navrhnout náramek na druhé místo v menu (v hlavní liště i v „Více"), aby na počítači nespadl do „Více";
+    // které položky se do lišty vejdou, přepočítá skript Shoptetu
+    function promoteMenuItem() {
+        var moved = false;
+        Array.prototype.forEach.call(document.querySelectorAll('ul.menu-level-1'), function (ul) {
+            var li = ul.querySelector(':scope > li.' + RD_CONFIG.promo.menuItem);
+            if (!li) return;
+            li.classList.add('rd-menu-promo');
+            if (ul.children[1] && ul.children[1] !== li) {
+                ul.insertBefore(li, ul.children[1]);
+                moved = true;
+            }
+        });
+        if (moved && window.shoptet && shoptet.menu && shoptet.menu.splitMenu) {
+            shoptet.menu.splitMenu();
+        }
+    }
+
     try {
+        promoteMenuItem();
         if (document.body.classList.contains('in-index')) {
             buildHomepage();
         }
