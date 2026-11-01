@@ -368,7 +368,9 @@ document.addEventListener("DOMContentLoaded", function () {
         wrist: { min: 12, max: 24, step: 0.5, value: 16, extraCm: 2 },
         toleranceCm: 0.5, // o kolik může být hotový náramek kratší, než vychází ze zápěstí
         sizeGuideUrl: '/jak-vybrat-velikost-naramku/',
-        lead: 'Vyberte si korálky a poskládejte z nich vlastní náramek. Korálek odeberete kliknutím na něj v náhledu.'
+        lead: 'Vyberte si korálky a poskládejte z nich vlastní náramek. Korálek odeberete kliknutím na něj v náhledu.',
+        // drobný text pod náhledem náramku
+        note: 'Náhled je pouze ilustrativní. Přírodní kameny jsou každý originál, barvou i kresbou se proto mohou od fotografie mírně lišit.'
     };
     var STORAGE_KEY = 'rd:navrhy';
     var RING = 0.38; // poloměr kruhu jako podíl šířky náhledu, v CSS mu odpovídá inset: 12 %
@@ -817,6 +819,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             '<button type="button" class="rd-konf__undo">Vrátit poslední</button>' +
                             '<button type="button" class="rd-konf__clear">Začít znovu</button>' +
                         '</div>' +
+                        '<p class="rd-konf__note">' + esc(KONF.note) + '</p>' +
                     '</div>' +
                     '<div class="rd-konf__summary">' +
                         '<div class="rd-konf__bar"><span></span></div>' +

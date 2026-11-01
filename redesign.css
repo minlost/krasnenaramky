@@ -1062,6 +1062,16 @@ textarea:focus {
     cursor: default;
 }
 
+/* drobná poznámka pod náhledem: náhled je ilustrativní, přírodní kameny se liší */
+.rd-konf__note {
+    max-width: 30em;
+    margin: 14px auto 0;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--rd-muted);
+}
+
 .rd-konf__panel {
     display: flex;
     flex-direction: column;
