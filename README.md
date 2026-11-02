@@ -35,7 +35,9 @@ V administraci Shoptetu se při změně nic neupravuje.
 
 ## Návrh simple náramku (`/navrh-simple-naramku/`)
 
-- Stránka je kategorie **Návrh simple náramku**, podkategorie Navrhnout náramek. V menu není a zatím není nikde prolinkovaná. Kategorie musí zůstat viditelná, jinak stránka vrátí 404.
-- Zatím je to jen náhled, do košíku se nic nevkládá. Zákazník si vybere jeden náramek nebo pár, barvu provázku a na každý náramek až 5 písmenek nebo čísel a až 5 korálků.
+- Stránka je kategorie **Návrh simple náramku**, podkategorie Navrhnout náramek. V menu není, odkazují na ni blok na úvodní stránce a přepínač „Z korálků / Na provázku“ nahoře v obou návrzích. Kategorie musí zůstat viditelná, jinak stránka vrátí 404.
+- Zákazník si vybere jeden náramek nebo pár, barvu provázku a na každý náramek až 5 písmenek nebo čísel a až 5 korálků. Každý náramek musí mít aspoň jeden kousek.
+- Cena a košík: do košíku jde produkt **Simple náramek na provázku – vlastní návrh** (199 Kč, jedno písmenko v ceně) nebo **Párové simple náramky na provázku – vlastní návrh** (299 Kč, jedno písmenko na každém náramku v ceně), k tomu **Písmenko nebo číslo navíc – simple náramek** (8 Kč) za každé další písmenko nebo číslo a vybrané 6mm korálky v jejich ceně. Ceny se mění v administraci u těchto produktů, konfigurátor si je načte sám. Produkty musí mít sklad. Jejich detail přesměruje na konfigurátor.
+- Barvy provázku a písmenka se v košíku neobjevují, prodejce je najde v poznámce k objednávce, např. „Párové simple náramky: horní náramek, provázek černá: A (černé), N (černé), korálek Ametyst; spodní náramek, provázek červená: B (bílé)“.
 - Písmenka a čísla se kreslí, nejsou to fotky. 6mm korálky jsou varianty produktu `/koralek-6mm/`, stejně jako v Návrhu náramku.
-- Barvy provázku (název a barva v náhledu), počet kousků na náramek a texty se mění v `KONF` v oddílu 6 souboru `redesign.js`.
+- Barvy provázku (název a barva v náhledu), počet kousků na náramek a texty se mění v `KONF` v oddílu 6 souboru `redesign.js`. Texty bloků na úvodní stránce jsou v `RD_CONFIG.promo` a `RD_CONFIG.promoSimple`.

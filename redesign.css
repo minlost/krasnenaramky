@@ -473,96 +473,95 @@ textarea:focus {
     color: var(--rd-brown);
 }
 
-/* blok „Navrhněte si vlastní náramek" */
+/* dva bloky „Navrhněte si…" pod kategoriemi (náramek z korálků a na provázku); celý blok je odkaz */
 .rd-promo {
-    padding: 40px 0 8px;
+    padding: 36px 0 8px;
 }
 
-.rd-promo__inner {
+.rd-promo__grid {
     display: grid;
-    grid-template-columns: 5fr 7fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.rd-promo__card {
+    display: flex;
     align-items: center;
-    gap: 40px;
-    padding: 48px 64px;
+    gap: 24px;
+    padding: 22px 28px 22px 22px;
     background: var(--rd-dark);
-    border-radius: 24px;
+    border-radius: 20px;
     color: var(--rd-on-dark);
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
 }
 
-.rd-promo__ring {
+.rd-promo__card:hover {
+    color: var(--rd-on-dark);
+    text-decoration: none;
+    box-shadow: var(--rd-shadow-hover);
+    transform: translateY(-2px);
+}
+
+/* obrázek na světlém kruhu, aby byl vidět i černý provázek */
+.rd-promo__art {
     position: relative;
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    margin: 0 auto;
+    flex: 0 0 148px;
     aspect-ratio: 1 / 1;
+    background: radial-gradient(circle at 40% 35%, #FFFFFF, var(--rd-sand) 70%);
+    border-radius: 50%;
 }
 
-.rd-promo__ring img {
+.rd-promo__art img {
     position: absolute;
     aspect-ratio: 1 / 1;
     transform: translate(-50%, -50%);
 }
 
+.rd-promo__art .rd-simple__svg {
+    position: absolute;
+    inset: 3%;
+    width: 94%;
+}
+
+.rd-promo__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
 .rd-promo .rd-eyebrow {
+    margin-bottom: 6px;
     color: #E8B08F;
 }
 
 .rd-promo h2 {
-    margin: 0 0 16px;
-    font-size: clamp(28px, 2.8vw, 42px);
-    line-height: 1.15;
+    margin: 0 0 6px;
+    font-size: clamp(20px, 1.7vw, 25px);
+    line-height: 1.2;
     color: var(--rd-on-dark);
 }
 
 .rd-promo__lead {
-    margin: 0 0 24px;
-    max-width: 32em;
-    font-size: 17px;
-    line-height: 1.6;
+    margin: 0 0 14px;
+    font-size: 15px;
+    line-height: 1.5;
     color: #D9CCBF;
 }
 
-.rd-promo__steps {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 0 0 30px;
-    padding: 0;
-    list-style: none;
-    counter-reset: rd-step;
-}
-
-.rd-promo__steps li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 15px;
-    font-weight: 500;
-    counter-increment: rd-step;
-}
-
-.rd-promo__steps li::before {
-    content: counter(rd-step);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border: 1px solid #E8B08F;
-    border-radius: 50%;
-    font-size: 13px;
+.rd-promo__cta {
+    padding: 9px 20px;
+    background: var(--rd-accent);
+    border-radius: 999px;
+    font-size: 14px;
     font-weight: 600;
-    color: #E8B08F;
+    color: #fff;
+    transition: background-color .2s;
 }
 
-.rd-promo .btn {
-    padding: 14px 30px;
-    font-size: 16px;
-}
-
-.rd-promo .btn:after {
-    display: none;
+.rd-promo__card:hover .rd-promo__cta {
+    background: var(--rd-accent-hover);
 }
 
 /* záložka „Novinky" jako nadpis sekce */
@@ -919,6 +918,38 @@ textarea:focus {
 .rd-konf__head {
     max-width: 720px;
     margin: 0 0 28px;
+}
+
+/* přepínač Z korálků / Na provázku */
+.rd-konf__switch {
+    display: inline-flex;
+    gap: 4px;
+    margin: 0 0 20px;
+    padding: 4px;
+    background: var(--rd-sand);
+    border-radius: 999px;
+}
+
+.rd-konf__switch a,
+.rd-konf__switch span {
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--rd-muted);
+    text-decoration: none;
+}
+
+.rd-konf__switch a:hover {
+    color: var(--rd-text);
+    background: rgba(255, 255, 255, .6);
+}
+
+.rd-konf__switch span {
+    background: var(--rd-surface);
+    color: var(--rd-text);
+    box-shadow: var(--rd-shadow);
 }
 
 .rd-konf__head h1 {
@@ -1493,8 +1524,13 @@ textarea:focus {
 /* ---------- Návrh simple náramku (stránku vytváří JS, oddíl 6) ---------- */
 /* kategorie je prázdná, místo jejího obsahu je konfigurátor; zbytek vzhledu přebírá z Návrhu náramku (.rd-konf) */
 .rd-js .type-category.in-navrh-simple-naramku .category-top,
-.rd-js .type-category.in-navrh-simple-naramku .category-content-wrapper {
+.rd-js .type-category.in-navrh-simple-naramku .category-content-wrapper,
+.rd-js .type-detail.in-navrh-simple-naramku #content {
     display: none;
+}
+
+.rd-simple .rd-konf__status {
+    margin-top: 0;
 }
 
 /* náhled jako fotka na papíře: světlo zleva nahoře a jemné zrno */
@@ -1645,10 +1681,6 @@ textarea:focus {
     box-shadow: none;
     transform: none;
     cursor: not-allowed;
-}
-
-.rd-simple .rd-konf__msg {
-    margin-top: 12px;
 }
 
 /* pořadí na mobilu: počet náramků, náhled, barva, kousky */
@@ -1819,25 +1851,9 @@ textarea:focus {
         scroll-snap-align: start;
     }
 
-    .rd-promo__inner {
+    .rd-promo__grid {
         grid-template-columns: 1fr;
-        gap: 24px;
-        padding: 32px 24px;
-        border-radius: 18px;
-        text-align: center;
-    }
-
-    .rd-promo__ring {
-        max-width: 240px;
-    }
-
-    .rd-promo__lead {
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .rd-promo__steps {
-        align-items: center;
+        gap: 12px;
     }
 }
 
@@ -1891,6 +1907,39 @@ textarea:focus {
 
     .rd-cat__label {
         font-size: 15px;
+    }
+
+    .rd-promo {
+        padding-top: 28px;
+    }
+
+    .rd-promo__card {
+        gap: 16px;
+        padding: 14px 16px 14px 14px;
+        border-radius: 16px;
+    }
+
+    .rd-promo__art {
+        flex-basis: 92px;
+    }
+
+    .rd-promo .rd-eyebrow {
+        display: none;
+    }
+
+    .rd-promo h2 {
+        margin-bottom: 10px;
+        font-size: 18px;
+    }
+
+    /* na mobilu jen nadpis a tlačítko, ať bloky nezabírají místo */
+    .rd-promo__lead {
+        display: none;
+    }
+
+    .rd-promo__cta {
+        padding: 6px 14px;
+        font-size: 13px;
     }
 
     .products-block .p .name,
