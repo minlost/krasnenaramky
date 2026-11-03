@@ -1363,7 +1363,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* ---------- 6. Návrh simple náramku na provázku ---------- */
 // Stránka je kategorie Návrh simple náramku (podkategorie Navrhnout náramek, v menu není).
-// Jeden náramek nebo pár, barva provázku, písmenka, čísla a 6mm korálky (varianty produktu KONF.beadProduct).
+// Jeden náramek nebo pár, velikost (dámská/pánská), barva provázku, písmenka, čísla a 6mm korálky (varianty produktu KONF.beadProduct).
 // Do košíku jde produkt jednoho náramku nebo páru, písmenka navíc a korálky; složení jde do poznámky k objednávce.
 (function () {
     var KONF = {
@@ -1396,7 +1396,9 @@ document.addEventListener("DOMContentLoaded", function () {
             { name: 'Černá', hex: '#1C1A19' }
         ],
         defaultColor: 'Černá',
-        letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+        // velikost každého náramku; zákazník ji musí vybrat, jinak nejde vložit do košíku
+        sizes: ['Dámská', 'Pánská'],
+        letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
         // nejvíc kusů na jeden náramek
         maxLetters: 5,
         maxBeads: 5,
@@ -1690,7 +1692,7 @@ document.addEventListener("DOMContentLoaded", function () {
             beadsError: '',
             products: null,
             busy: false,
-            bracelets: [{ color: KONF.defaultColor, charms: [] }, { color: KONF.defaultColor, charms: [] }]
+            bracelets: [{ size: '', color: KONF.defaultColor, charms: [] }, { size: '', color: KONF.defaultColor, charms: [] }]
         };
 
         // na mobilu se bloky řadí jinak (počet náramků, náhled, barva, kousky), viz CSS
@@ -1735,6 +1737,12 @@ document.addEventListener("DOMContentLoaded", function () {
                                 '<button type="button" class="rd-konf__tab" data-which="1">Spodní náramek</button>' +
                             '</div>' +
                         '</div>' +
+                    '</div>' +
+                    '<div class="rd-simple__size-field">' +
+                        '<p class="rd-simple__label">Velikost</p>' +
+                        '<div class="rd-konf__tabs">' + KONF.sizes.map(function (s) {
+                            return '<button type="button" class="rd-konf__tab" data-size="' + esc(s) + '">' + esc(s) + '</button>';
+                        }).join('') + '</div>' +
                     '</div>' +
                     '<div class="rd-simple__color-field">' +
                         '<p class="rd-simple__label">Barva provázku: <span class="rd-simple__color-name"></span></p>' +
@@ -1816,7 +1824,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // složení pro poznámku k objednávce
         function describe() {
             return used().map(function (br, i) {
-                return (state.pair ? (i ? 'spodní' : 'horní') + ' náramek, ' : '') + 'provázek ' + br.color.toLowerCase() + ': ' +
+                return (state.pair ? (i ? 'spodní' : 'horní') + ' náramek, ' : '') + 'velikost ' + br.size.toLowerCase() + ', provázek ' + br.color.toLowerCase() + ': ' +
                     br.charms.map(charmText).join(', ');
             }).join('; ');
         }
@@ -1864,6 +1872,9 @@ document.addEventListener("DOMContentLoaded", function () {
             Array.prototype.forEach.call(root.querySelectorAll('[data-which]'), function (btn) {
                 btn.setAttribute('aria-pressed', String(+btn.getAttribute('data-which') === state.active));
             });
+            Array.prototype.forEach.call(root.querySelectorAll('[data-size]'), function (btn) {
+                btn.setAttribute('aria-pressed', String(btn.getAttribute('data-size') === br.size));
+            });
             Array.prototype.forEach.call(root.querySelectorAll('[data-color]'), function (btn) {
                 btn.setAttribute('aria-pressed', String(btn.getAttribute('data-color') === br.color));
             });
@@ -1879,13 +1890,16 @@ document.addEventListener("DOMContentLoaded", function () {
             el('konf__undo').disabled = !br.charms.length || state.busy;
             el('konf__clear').disabled = !used().some(function (x) { return x.charms.length; }) || state.busy;
 
-            // každý náramek musí mít aspoň jeden kousek
-            var ready = used().every(function (x) { return x.charms.length; });
+            // každý náramek musí mít aspoň jeden kousek a vybranou velikost
+            var hasCharms = used().every(function (x) { return x.charms.length; });
+            var hasSize = used().every(function (x) { return x.size; });
+            var ready = hasCharms && hasSize;
             var p = state.products;
             var q = p && quote();
-            el('konf__status').textContent = !ready
+            el('konf__status').textContent = !hasCharms
                 ? (state.pair ? 'Na každý náramek přidejte aspoň jedno písmenko nebo korálek.' : 'Přidejte aspoň jedno písmenko nebo korálek.')
-                : p ? 'Jedno písmenko ' + (state.pair ? 'na každém náramku ' : '') + 'je v ceně, každé další stojí ' + price(p.letter.price) + '.' : '';
+                : !hasSize ? (state.pair ? 'Vyberte velikost u obou náramků.' : 'Vyberte velikost náramku.')
+                : p ?'Jedno písmenko ' + (state.pair ? 'na každém náramku ' : '') + 'je v ceně, každé další stojí ' + price(p.letter.price) + '.' : '';
             el('konf__price').firstChild.textContent = q ? price(q.total) : '';
             el('konf__price').lastChild.textContent = q ? q.parts.join(' + ') : '';
             addBtn.disabled = !ready || !p || state.busy;
@@ -1962,6 +1976,9 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (t.hasAttribute('data-which')) {
                 state.active = +t.getAttribute('data-which');
                 renderState();
+            } else if (t.hasAttribute('data-size')) {
+                current().size = t.getAttribute('data-size');
+                change();
             } else if (t.hasAttribute('data-color')) {
                 current().color = t.getAttribute('data-color');
                 change();

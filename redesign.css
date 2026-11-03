@@ -1773,6 +1773,10 @@ textarea:focus {
     margin-top: 6px;
 }
 
+.rd-simple__size-field .rd-konf__tabs {
+    margin-bottom: 0;
+}
+
 .rd-simple__colors {
     display: flex;
     flex-wrap: wrap;
@@ -1851,12 +1855,13 @@ textarea:focus {
     cursor: not-allowed;
 }
 
-/* pořadí na mobilu: počet náramků, náhled, barva, kousky */
+/* pořadí na mobilu: počet náramků, náhled, velikost, barva, kousky */
 @media (max-width: 991px) {
     .rd-simple__mode {
         order: 1;
     }
 
+    .rd-simple__size-field,
     .rd-simple__color-field {
         order: 3;
     }
