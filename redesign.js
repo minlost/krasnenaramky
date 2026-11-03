@@ -67,17 +67,18 @@
             button: { text: 'Navrhnout na provázku', url: '/navrh-simple-naramku/' }
         },
         // Black Friday: lišta nad hlavičkou na všech stránkách a banner nahoře na úvodní stránce.
-        // Ukáže se jen od–do (včetně, podle data v počítači návštěvníka). Slevu samotnou počítá Shoptet:
-        // Marketing → Slevy X+Y → „Black Friday 2026 – 2+1 zdarma“; data tam a tady musí sedět.
+        // Ukáže se jen od–do (včetně, podle data v počítači návštěvníka); konec se v textech schválně neuvádí.
+        // Slevu samotnou počítá Shoptet: Marketing → Slevy X+Y → „Black Friday 2026 – 2+1 zdarma“; data tam a tady musí sedět.
+        // Navržený náramek z korálků se do trojice počítá (produkt Návrh náramku), zdarma je ale vždy jiný šperk.
         blackFriday: {
             from: '2026-11-03',
             until: '2026-11-30',
-            bar: { title: 'Black Friday', text: '2 + 1 zdarma', more: 'nejlevnější ze tří šperků máte od nás, jen do 30. 11.', cta: 'Vybrat' },
-            eyebrow: 'Black Friday · jen do 30. 11.',
+            bar: { title: 'Black Friday', text: '2 + 1 zdarma', more: 'nejlevnější ze tří šperků máte od nás', cta: 'Vybrat' },
+            eyebrow: 'Black Friday',
             title: '2 + 1',
             titleAccent: 'zdarma',
             lead: 'Vyberte si tři šperky a ten nejlevnější máte od nás zdarma. Sleva se odečte sama v košíku.',
-            note: 'Platí na náramky, náhrdelníky i šperky se jménem. Neplatí na dárkové kartičky a náramky z návrhu.',
+            note: 'Platí na náramky, náhrdelníky, šperky se jménem i náramky, které si navrhnete. Neplatí na dárkové kartičky.',
             button: { text: 'Vybrat šperky', url: '/naramky/' },
             images: [
                 'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3153-1_letni-laska-set.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d',
@@ -1199,6 +1200,49 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // ikona košíku v hlavičce počítá náramek jako jeden kus, ne Návrh + každý korálek zvlášť;
+    // jen čte (nic neukládá), košík bere z dataLayer, se kterým se stránka načetla
+    function fixCartCount() {
+        var designs = loadDesigns();
+        if (!designs.length || !Array.isArray(data.cart) || !window.shoptet || !shoptet.cart || !shoptet.cart.updateCartButton) {
+            return;
+        }
+        var inCart = {};
+        var total = 0;
+        data.cart.forEach(function (item) {
+            inCart[item.priceId] = (inCart[item.priceId] || 0) + item.quantity;
+            total += item.quantity;
+        });
+        // stejně jako keepDesigns: náramků je tolik, kolik kusů Návrhu je v košíku, přednost mají nejnovější
+        var base = String(designs[0].priceId);
+        var left = inCart[base] || 0;
+        var beads = {};
+        for (var i = designs.length - 1; i >= 0 && left > 0; i--) {
+            var qty = Math.min(designs[i].qty || 1, left);
+            left -= qty;
+            designs[i].items.forEach(function (item) {
+                if (String(item.priceId) !== base) {
+                    beads[item.priceId] = (beads[item.priceId] || 0) + item.amount * qty;
+                }
+            });
+        }
+        var minus = Object.keys(beads).reduce(function (n, priceId) {
+            return n + Math.min(beads[priceId], inCart[priceId] || 0);
+        }, 0);
+        if (!minus) {
+            return;
+        }
+        var count = document.querySelector('#header .cart-count i');
+        if (count) {
+            count.textContent = total - minus > 99 ? '99+' : total - minus;
+        }
+        // po přidání do košíku bez načtení stránky Shoptet počet přepíše, korálky se proto odečtou i tam
+        var update = shoptet.cart.updateCartButton;
+        shoptet.cart.updateCartButton = function (n, priceText) {
+            return update.call(this, parseFloat(n) > minus ? parseFloat(n) - minus : n, priceText);
+        };
+    }
+
     // rekapitulace (krok 1 a 2): místo Návrhu náramku a jeho korálků řádek za každý náramek
     function enhanceRecap() {
         var designs = orderDesigns();
@@ -1292,6 +1336,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (body.classList.contains(KONF.page.bodyClass) && body.classList.contains('type-detail')) {
                 build();
             }
+            fixCartCount();
             // okno košíku v hlavičce se načítá dodatečně, stránka košíku se po změně načte znovu
             document.addEventListener('ShoptetDOMCartContentLoaded', enhanceCarts);
             var init = {
