@@ -1,7 +1,7 @@
 /* =========================================================
    Krásné náramky – skripty webu
    Načítá se z GitHub Pages, odkaz je v zapati.html
-   1. Bloky úvodní stránky a Navrhnout náramek v menu (texty a obrázky v RD_CONFIG)
+   1. Bloky úvodní stránky, Navrhnout náramek v menu a Black Friday (texty a obrázky v RD_CONFIG)
    2. Chat Smartsupp
    3. Náhled písma u gravírování
    4. Druhá fotka produktu po najetí myší
@@ -65,6 +65,25 @@
             title: 'Náramek na provázku se jménem',
             lead: 'Barva provázku, písmenka, čísla i korálky. Jeden náramek nebo pár.',
             button: { text: 'Navrhnout na provázku', url: '/navrh-simple-naramku/' }
+        },
+        // Black Friday: lišta nad hlavičkou na všech stránkách a banner nahoře na úvodní stránce.
+        // Ukáže se jen od–do (včetně, podle data v počítači návštěvníka). Slevu samotnou počítá Shoptet:
+        // Marketing → Slevy X+Y → „Black Friday 2026 – 2+1 zdarma“; data tam a tady musí sedět.
+        blackFriday: {
+            from: '2026-11-27',
+            until: '2026-11-30',
+            bar: { title: 'Black Friday', text: '2 + 1 zdarma', more: 'nejlevnější ze tří šperků máte od nás, jen do 30. 11.', cta: 'Vybrat' },
+            eyebrow: 'Black Friday · 27.–30. 11.',
+            title: '2 + 1',
+            titleAccent: 'zdarma',
+            lead: 'Vyberte si tři šperky a ten nejlevnější máte od nás zdarma. Sleva se odečte sama v košíku.',
+            note: 'Platí na náramky, náhrdelníky i šperky se jménem. Neplatí na dárkové kartičky a náramky z návrhu.',
+            button: { text: 'Vybrat šperky', url: '/naramky/' },
+            images: [
+                'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3153-1_letni-laska-set.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d',
+                'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/2217_nahrdelnik-ametyst.png?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d',
+                'https://cdn.myshoptet.com/usr/www.krasnenaramky.cz/user/shop/detail/3068_naramky-pro-pary-inicialy-stribrne.jpg?ff=1&x=423&y=318&q=85&ts=67438357&sg=2175fb9d'
+            ]
         }
     };
 
@@ -195,6 +214,48 @@
         }
     }
 
+    // Black Friday (RD_CONFIG.blackFriday): lišta nad hlavičkou všude, na úvodní stránce banner nad hero
+    function buildBlackFriday() {
+        var bf = RD_CONFIG.blackFriday;
+        var now = new Date();
+        var today = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2);
+        if (today < bf.from || today > bf.until) return;
+
+        var header = document.getElementById('header');
+        var body = document.body.classList;
+        // v košíku lišta zůstane, v dalších krocích objednávky by jen odváděla pryč
+        if (header && !(body.contains('ordering-process') && !body.contains('in-kosik'))) {
+            var bar = document.createElement('a');
+            bar.className = 'rd-bf-bar';
+            bar.href = bf.button.url;
+            bar.innerHTML = '<strong>' + esc(bf.bar.title) + '</strong> <span class="rd-bf-bar__text">' + esc(bf.bar.text) + '</span>' +
+                '<span class="rd-bf-bar__more">: ' + esc(bf.bar.more) + '</span> <span class="rd-bf-bar__cta">' + esc(bf.bar.cta) + ' →</span>';
+            header.parentNode.insertBefore(bar, header);
+        }
+
+        var content = document.getElementById('content');
+        if (!content || !body.contains('in-index')) return;
+        // tři šperky, třetí (nejlevnější) s visačkou „zdarma"
+        var art = bf.images.map(function (src, i) {
+            return (i ? '<span class="rd-bf__plus">+</span>' : '') +
+                '<span class="rd-bf__item' + (i === bf.images.length - 1 ? ' rd-bf__item--free' : '') + '"><img src="' + esc(src) + '" alt="" loading="lazy">' +
+                (i === bf.images.length - 1 ? '<span class="rd-bf__badge">' + esc(bf.titleAccent) + '</span>' : '') + '</span>';
+        }).join('');
+        var banner = document.createElement('section');
+        banner.className = 'rd-bf';
+        banner.innerHTML = '<div class="rd-wrap"><a class="rd-bf__card" href="' + esc(bf.button.url) + '">' +
+            '<span class="rd-bf__text">' +
+                '<span class="rd-eyebrow">' + esc(bf.eyebrow) + '</span>' +
+                '<h2 class="rd-bf__title">' + esc(bf.title) + ' <em>' + esc(bf.titleAccent) + '</em></h2>' +
+                '<span class="rd-bf__lead">' + esc(bf.lead) + '</span>' +
+                '<span class="rd-bf__cta">' + esc(bf.button.text) + ' →</span>' +
+                '<small class="rd-bf__note">' + esc(bf.note) + '</small>' +
+            '</span>' +
+            '<span class="rd-bf__art" aria-hidden="true">' + art + '</span>' +
+        '</a></div>';
+        content.insertBefore(banner, content.firstChild);
+    }
+
     try {
         promoteMenuItem();
         if (document.body.classList.contains('in-index')) {
@@ -203,6 +264,10 @@
     } catch (e) {
         document.documentElement.classList.remove('rd-js');
     }
+    // chyba v banneru nesmí zastavit zbytek souboru (chat, gravírování, návrhy)
+    try {
+        buildBlackFriday();
+    } catch (e) {}
 })();
 
 /* ---------- 2. Chat Smartsupp ---------- */

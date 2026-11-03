@@ -564,6 +564,174 @@ textarea:focus {
     background: var(--rd-accent-hover);
 }
 
+/* Black Friday (RD_CONFIG.blackFriday): lišta nad hlavičkou a banner nahoře na úvodní stránce */
+.rd-bf-bar {
+    display: block;
+    padding: 9px 20px;
+    background: #0F0C0B;
+    border-bottom: 1px solid rgba(232, 176, 143, .25);
+    font-size: 14px;
+    line-height: 1.4;
+    text-align: center;
+    color: var(--rd-on-dark);
+    text-decoration: none;
+}
+
+.rd-bf-bar:hover {
+    color: var(--rd-on-dark);
+    text-decoration: none;
+}
+
+.rd-bf-bar strong {
+    margin-right: .4em;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #E8B08F;
+}
+
+.rd-bf-bar__text {
+    font-weight: 600;
+}
+
+.rd-bf-bar__cta {
+    margin-left: .6em;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: #E8B08F;
+    text-underline-offset: 4px;
+}
+
+.rd-bf {
+    padding: 28px 0 0;
+}
+
+.rd-bf + .rd-hero {
+    padding-top: 20px;
+}
+
+.rd-bf__card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 36px 56px 36px 64px;
+    background: radial-gradient(120% 140% at 85% 50%, #3A2D26 0%, #171311 55%);
+    border-radius: 24px;
+    color: var(--rd-on-dark);
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+}
+
+.rd-bf__card:hover {
+    color: var(--rd-on-dark);
+    text-decoration: none;
+    box-shadow: var(--rd-shadow-hover);
+    transform: translateY(-2px);
+}
+
+.rd-bf__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.rd-bf .rd-eyebrow {
+    margin-bottom: 8px;
+    color: #E8B08F;
+}
+
+.rd-bf h2.rd-bf__title {
+    margin: 0 0 12px;
+    font-size: clamp(44px, 4.6vw, 72px);
+    line-height: 1;
+    color: var(--rd-on-dark);
+}
+
+.rd-bf__title em {
+    font-style: italic;
+    color: #E8B08F;
+}
+
+.rd-bf__lead {
+    max-width: 30em;
+    margin: 0 0 20px;
+    font-size: 17px;
+    line-height: 1.55;
+    color: #D9CCBF;
+}
+
+.rd-bf__cta {
+    padding: 12px 28px;
+    background: var(--rd-accent);
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    transition: background-color .2s;
+}
+
+.rd-bf__card:hover .rd-bf__cta {
+    background: var(--rd-accent-hover);
+}
+
+.rd-bf__note {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #B5A699;
+}
+
+.rd-bf__art {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 14px;
+}
+
+.rd-bf__item {
+    position: relative;
+    width: 150px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(246, 239, 230, .12);
+}
+
+.rd-bf__item img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.rd-bf__item--free {
+    box-shadow: 0 0 0 4px #E8B08F;
+}
+
+.rd-bf__badge {
+    position: absolute;
+    left: 50%;
+    bottom: -12px;
+    padding: 5px 14px;
+    background: #E8B08F;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #171311;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+.rd-bf__plus {
+    font-family: var(--rd-serif);
+    font-size: 34px;
+    line-height: 1;
+    color: #E8B08F;
+}
+
 /* záložka „Novinky" jako nadpis sekce */
 .homepage-tabs-wrapper {
     margin-top: 32px;
@@ -1855,6 +2023,22 @@ textarea:focus {
         grid-template-columns: 1fr;
         gap: 12px;
     }
+
+    .rd-bf__card {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 26px;
+        padding: 30px 24px 28px;
+        border-radius: 18px;
+    }
+
+    .rd-bf__art {
+        justify-content: center;
+    }
+
+    .rd-bf__item {
+        width: 112px;
+    }
 }
 
 @media (max-width: 767px) {
@@ -1907,6 +2091,64 @@ textarea:focus {
 
     .rd-cat__label {
         font-size: 15px;
+    }
+
+    .rd-bf-bar {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+
+    .rd-bf-bar__more {
+        display: none;
+    }
+
+    .rd-bf {
+        padding-top: 14px;
+    }
+
+    .rd-bf + .rd-hero {
+        padding-top: 14px;
+    }
+
+    .rd-bf__card {
+        gap: 22px;
+        padding: 24px 20px;
+    }
+
+    .rd-bf__art {
+        gap: 8px;
+    }
+
+    .rd-bf__item {
+        width: 84px;
+    }
+
+    .rd-bf__badge {
+        bottom: -10px;
+        padding: 3px 10px;
+        font-size: 11px;
+    }
+
+    .rd-bf__plus {
+        font-size: 24px;
+    }
+
+    .rd-bf h2.rd-bf__title {
+        font-size: 46px;
+    }
+
+    .rd-bf__lead {
+        margin-bottom: 18px;
+        font-size: 15px;
+    }
+
+    .rd-bf__cta {
+        padding: 10px 22px;
+        font-size: 15px;
+    }
+
+    .rd-bf__note {
+        font-size: 12px;
     }
 
     .rd-promo {
