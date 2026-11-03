@@ -70,10 +70,10 @@
         // Ukáže se jen od–do (včetně, podle data v počítači návštěvníka). Slevu samotnou počítá Shoptet:
         // Marketing → Slevy X+Y → „Black Friday 2026 – 2+1 zdarma“; data tam a tady musí sedět.
         blackFriday: {
-            from: '2026-11-27',
+            from: '2026-11-03',
             until: '2026-11-30',
             bar: { title: 'Black Friday', text: '2 + 1 zdarma', more: 'nejlevnější ze tří šperků máte od nás, jen do 30. 11.', cta: 'Vybrat' },
-            eyebrow: 'Black Friday · 27.–30. 11.',
+            eyebrow: 'Black Friday · jen do 30. 11.',
             title: '2 + 1',
             titleAccent: 'zdarma',
             lead: 'Vyberte si tři šperky a ten nejlevnější máte od nás zdarma. Sleva se odečte sama v košíku.',
